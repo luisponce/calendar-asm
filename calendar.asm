@@ -2,6 +2,12 @@
 
 SECTION .data			;variables inicializadas
 msgErr:	db "Numero de parametros invalidos",0xa,0
+
+endln:	db 0xa
+	
+sys_write: 	equ 4
+sys_exit:	equ 1
+stdout:		equ 1
 	
 SECTION .dss			;variables no inicializadas
 
@@ -19,27 +25,37 @@ _start:
 	cmp eax, 3
 	je .ConArgumentos
 
+	
 	;; else
-	mov ebx, msgErr
-	call print
+	mov ebx, msgErr		;parametros invalidos
+	call printString
 	jmp .exit
 
 .SinArgumentos:
+	mov eax,endln
+	call printChar
+	
 	jmp .exit
 
 .ConArgumentos:
+	mov eax,endln
+	call printChar
+	
 	jmp .exit
 	
 	;; salir
 .exit:
-	mov eax,1		;sys_exit
+	mov eax,sys_exit
 	mov ebx,0		
-	int 0x80
+	int 80h
 
 	
 ;;; funciones 
-
-print:				;escribe lo que este en ebx como apuntador
+	
+;;; Input ebx = char * str (termina en null)
+printString:				;escribe lo que este en ebx
+	pusha			
+	
 	mov ecx, -1		;i= -1
 .while:
 	inc ecx			;i++
@@ -48,16 +64,30 @@ print:				;escribe lo que este en ebx como apuntador
 
 	;; sys_write(1, ebx, ecx)
 	mov edx, ecx		
-	mov eax,4		
+	mov eax,sys_write		
 	mov ecx,ebx
-	mov ebx,1
-	int 0x80
+	mov ebx,stdout
+	int 80h
 
-	mov eax, 4
-	mov ebx,1
-	mov ecx,0xa
-	mov edx,1
-	int 0x80
+	;; fin de linea
+	mov eax,endln
+	call printChar
 
+	popa
+	
 	ret
+
+
+;;; intput: eax=number to print (int)
+printChar:
+	pusha
+	mov ebx, stdout
+	mov ecx, eax
+	mov edx, 1
+	mov eax, sys_write
+	int 80h
+	popa
+	ret
+
+
 
