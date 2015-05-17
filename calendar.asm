@@ -26,7 +26,7 @@ global _start
     sys_call
 %endmacro
 
-%macro getopts 0 
+%macro getopts 0
     pop eax ; Trae a eax argc (int)
 
     cmp eax, 1
@@ -55,6 +55,14 @@ args_error:	db "Numero de parametros invalidos",0
 
 test_string_1 db "Hola Mundo", 0
 test_string_2 db "Hola Munda", 0
+
+;; Strings de comparacion (PARSEOPTS)
+
+year_opt db "-y", 0
+date_opt db "-d", 0
+
+year_opt_msg db "Esta encendido el flag de year", 0
+date_opt_msg db "Esta encendido el flag de date", 0
 
 ;; Caracteres especiales ASCII
 ;
@@ -126,7 +134,42 @@ _start:
 ;
 parsopts:
     ; WARNING: Esta funcion no preserva los registros EAX ... ESI
+    ; compara si el argv[2 es -y
 
+    mov eax, [esp + 8]
+    mov ebx, year_opt
+
+    mov ecx, 3
+    mov edx, 3
+
+    call strcmp
+
+    cmp eax, 0
+    je  .parseoptsIsYear
+
+    mov eax, [esp + 8]
+    mov ebx, date_opt
+
+    mov ecx, 3
+    mov edx, 3
+
+    call strcmp
+
+    cmp eax, 0
+    je  .parseoptsIsDate 
+
+    jmp .parseoptsRet
+
+.parseoptsIsYear:
+    mov ebx, year_opt_msg
+    call print
+    jmp .parseoptsRet
+
+.parseoptsIsDate:
+    mov ebx, date_opt_msg
+    call print
+
+.parseoptsRet:
     ret
 
 ; Compara dos Strings haciendo uso de los llamados ESI:EDI del 
