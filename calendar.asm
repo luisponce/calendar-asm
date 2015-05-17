@@ -53,6 +53,9 @@ section .data
 ;; Strings del programa
 args_error:	db "Numero de parametros invalidos",0
 
+test_string_1 db "Hola Mundo", 0
+test_string_2 db "Hola Munda", 0
+
 ;; Caracteres especiales ASCII
 ;
 ; Notacion: 
@@ -65,7 +68,8 @@ BS db 0x08 ; Retroceso
 
 ;; Variables no inicializadas
 
-section .dss
+section .bss
+test_to_print: resb 2 ; reservo dos byte para test_to_print
 
 ;; Codigo (Logica del programa)
 
@@ -76,14 +80,34 @@ _start:
     getopts 
 
 .SinArgumentos:
+    ; Probando la funcion strcmp (ver mas abajo)
+
+    pusha
+    mov eax, test_string_1
+    mov ebx, test_string_2
+    mov ecx, 12
+    mov edx, 12
+    
+    call strcmp ; llamar a la funcion
+    
+    mov [test_to_print], eax
+    mov byte[test_to_print + 1], 0
+
+    add byte[test_to_print], 48 ; se suma 48 a eax (resultado) para convertirlo a ASCII
+    
+    mov ebx, test_to_print
+    call print ; llamar a escribir el numero
+
     mov eax, LF
     call printChar
+
+    popa
 
     jmp .exit
 
 .ConArgumentos:
-    mov eax, LF
-    call printChar
+    ;mov eax, LF
+    ;call printChar
 
     jmp .exit
 
@@ -103,6 +127,42 @@ _start:
 parsopts:
     ; WARNING: Esta funcion no preserva los registros EAX ... ESI
 
+    ret
+
+; Compara dos Strings haciendo uso de los llamados ESI:EDI del 
+; procesador que permiten la operacion con strings en memoria
+; (cmpsb) o (cmosw para comparar de a 2 bytes)
+;
+; Parametros:
+;   EAX => char * [Direccion SRC]
+;   EBX => char * [Direccion DES]
+;   ECX => int [Length SRC]
+;   EDX => int [Length DES]
+;
+; Retorno:
+;   EAX => 0 si son iguales; 1 si no son iguales
+;
+strcmp:
+    ; mueve a esi el str1 [eax]
+    mov esi, eax
+    ; mueve a edi el str2 [ebx]
+    mov edi, ebx
+
+    ; se limpia el flag de direccion de strings
+    cld
+    
+    ; el flag de ZERO se setea si ambos str son iguales o se limpia si no 
+    repe cmpsb ; va comparando bytes en memoria, hasta el caracter NULL
+    
+    jecxz .strcmpNotSame
+
+    mov eax, 1 ; movemos 1 a eax, es decir son iguales
+    jmp .strcmpExit ; retorna el resulatado [EAX]
+
+.strcmpNotSame:
+    mov eax, 0 ; movemos 0 a eax, es decir no son iguales
+
+.strcmpExit:
     ret
 
 ; Input ebx = char * str (termina en null)
@@ -133,15 +193,12 @@ print:				;escribe lo que este en ebx
 
 ;;; intput: eax=number to print (int)
 printChar:
-    pusha
     mov ebx, sys_stdout
     mov ecx, eax
     mov edx, 1
     mov eax, sys_write
 
     sys_call
-
-    popa
     ret
 
 
