@@ -31,7 +31,9 @@ global _start
 
     cmp eax, 1
     je  .SinArgumentos
-    jg  .parsopts
+
+    cmp eax, 2
+    je  .parsopts
     jmp .parselse
 
     .parsopts
