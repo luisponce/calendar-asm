@@ -26,23 +26,69 @@ global _start
     sys_call
 %endmacro
 
-%macro getopts 0
-    pop eax ; Trae a eax argc (int)
+
+; Determina si se tienen argumentos, y de ser asi que argumento es (-y / -d) en exec_mode  y
+; guarda el otro argumento (año / dia) ingresado en exec_argv
+; exec_mode = 0 no tiene argumentos
+; exec_mode = 1 el primer argumento es -y
+; exec_mode = 2 el priimer argumento es -d
+
+%macro getOpt 0
+    pop eax 
 
     cmp eax, 1
-    je  .SinArgumentos
+    je _sinArgumentos
 
-    cmp eax, 2
-    je  .parsopts
-    jmp .parselse
+    jg _conArgumentos
+    
+_sinArgumentos:
+    mov byte[exec_mode], 0
+    jmp _else
 
-    .parsopts
-    call parsopts
-    jmp .ConArgumentos
+_conArgumentos:
+    mov eax, [esp + 4]
+    mov ebx, year_opt
+    
+    mov ecx, 3 ; TODO: PONER LA LONGITUD
+    mov edx, 3
+    
+    call strcmp
+    
+    cmp eax, 0
+    je  _parseoptsIsYear
+    
+    mov eax, [esp + 4]
+    mov ebx, date_opt
+    
+    mov ecx, 3 ; TODO: PONER LA LONGITUD
+    mov edx, 3
+    
+    call strcmp
+    
+    cmp eax, 0
+    je  _parseoptsIsDate
+    
+    jmp _parseoptsRet
+    
+    _parseoptsIsYear:
+    
+        mov byte[exec_mode], 1
 
-    .parselse
-    mov ebx, args_error
-    call print
+        jmp _parseoptsRet
+ 
+    _parseoptsIsDate:
+    
+        mov byte[exec_mode], 2
+
+    _parseoptsRet:
+   
+    pop eax     ;pop args[0]
+    pop eax     ;pop args[1]
+    pop eax     ;pop args[2]
+
+    mov [exec_argv], eax
+
+_else:
 
 %endmacro
 
@@ -53,16 +99,10 @@ section .data
 ;; Strings del programa
 args_error:	db "Numero de parametros invalidos",0
 
-test_string_1 db "Hola Mundo", 0
-test_string_2 db "Hola Munda", 0
-
 ;; Strings de comparacion (PARSEOPTS)
 
 year_opt db "-y", 0
 date_opt db "-d", 0
-
-year_opt_msg db "Esta encendido el flag de year", 0
-date_opt_msg db "Esta encendido el flag de date", 0
 
 ;; Caracteres especiales ASCII
 ;
@@ -79,98 +119,34 @@ BS db 0x08 ; Retroceso
 section .bss
 test_to_print: resb 2 ; reservo dos byte para test_to_print
 
+exec_mode:  resb 4 ; Tipo de ejecucion
+exec_argv:  resb 50 ; Argumentos de ejecucion
+is_cot:     resb 1 ; Esta ubucado en colombia
+
 ;; Codigo (Logica del programa)
 
 section .text
 
 _start:
     ;; Llama al macro getops inspirado de C: getopts(int, char **);
-    getopts 
+    getOpt 
 
-.SinArgumentos:
-    ; Probando la funcion strcmp (ver mas abajo)
+    ;Suma a exec_mode 48 para pasar el numero a char
+    mov eax, [exec_mode]
+    add eax, 48
+    mov [exec_mode], eax
 
-    pusha
-    mov eax, test_string_1
-    mov ebx, test_string_2
-    mov ecx, 12
-    mov edx, 12
-    
-    call strcmp ; llamar a la funcion
-    
-    mov [test_to_print], eax
-    mov byte[test_to_print + 1], 0
+    mov eax, 4
+    mov ebx, 1
+    mov ecx, [exec_argv]
+    mov edx, 8
 
-    add byte[test_to_print], 48 ; se suma 48 a eax (resultado) para convertirlo a ASCII
-    
-    mov ebx, test_to_print
-    call print ; llamar a escribir el numero
-
-    mov eax, LF
-    call printChar
-
-    popa
-
-    jmp .exit
-
-.ConArgumentos:
-    ;mov eax, LF
-    ;call printChar
-
-    jmp .exit
+    sys_call
 
 .exit:
     ;; salir con exito
     sys_exit 0
 
-
-;;; funciones 
-
-; Determina las opts con las que fue llamado el programa
-; y dependiendo de la opcion establece el STACK con un flag
-;
-; FLAGS:
-;  0 => 
-;
-parsopts:
-    ; WARNING: Esta funcion no preserva los registros EAX ... ESI
-    ; compara si el argv[2 es -y
-
-    mov eax, [esp + 8]
-    mov ebx, year_opt
-
-    mov ecx, 3
-    mov edx, 3
-
-    call strcmp
-
-    cmp eax, 0
-    je  .parseoptsIsYear
-
-    mov eax, [esp + 8]
-    mov ebx, date_opt
-
-    mov ecx, 3
-    mov edx, 3
-
-    call strcmp
-
-    cmp eax, 0
-    je  .parseoptsIsDate 
-
-    jmp .parseoptsRet
-
-.parseoptsIsYear:
-    mov ebx, year_opt_msg
-    call print
-    jmp .parseoptsRet
-
-.parseoptsIsDate:
-    mov ebx, date_opt_msg
-    call print
-
-.parseoptsRet:
-    ret
 
 ; Compara dos Strings haciendo uso de los llamados ESI:EDI del 
 ; procesador que permiten la operacion con strings en memoria
