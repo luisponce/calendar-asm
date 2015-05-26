@@ -161,6 +161,8 @@ exec_mode:  resb 4 ; Tipo de ejecucion
 exec_argv:  resb 50 ; Argumentos de ejecucion
 is_cot:     resb 1 ; Esta ubucado en colombia
 
+numero:	resb 50
+	
 ;; Codigo (Logica del programa)
 
 section .text
@@ -168,8 +170,13 @@ section .text
 main:	
 	
 ;;; _start:
-    ;; Llama al macro getops inspirado de C: getopts(int, char **);
+    
+	mov eax, 1999
+	mov edi, numero
+	call intToString
+	call write_digit
 
+	;; Llama al macro getops inspirado de C: getopts(int, char **);
     getOpt 
 
     ;Suma a exec_mode 48 para pasar el numero a char
@@ -192,52 +199,6 @@ main:
 
 ;;; funciones 
 
-; Determina las opts con las que fue llamado el programa
-; y dependiendo de la opcion establece el STACK con un flag
-;
-; FLAGS:
-;  0 => 
-;
-parsopts:
-    ; WARNING: Esta funcion no preserva los registros EAX ... ESI
-    ; compara si el argv[2 es -y
-
-    mov eax, [esp + 8]		; eax = arg[1]
-    mov ebx, year_opt		; ebx = "-y",0
-
-    mov ecx, 3 			;TODO: strLen
-    mov edx, 3
-
-    call strcmp			;eax = 0 si iguales
-
-    cmp eax, 0			;si -y
-    je  .parseoptsIsYear
-
-	;; si no es -y
-    mov eax, [esp + 8]		;eax = arg[1]
-    mov ebx, date_opt		;ebx = "-d",0
-
-    mov ecx, 3			;TODO: strlen
-    mov edx, 3
-
-    call strcmp
-
-    cmp eax, 0			;eax = 0 si son iguales
-    je  .parseoptsIsDate 	;si -d
-
-    jmp .parseoptsRet		;si no es -d ni -y
-
-.parseoptsIsYear:
-    mov ebx, year_opt_msg
-    call print
-    jmp .parseoptsRet
-
-.parseoptsIsDate:
-    mov ebx, date_opt_msg
-    call print
-
-.parseoptsRet:
-    ret
 
 ; Compara dos Strings haciendo uso de los llamados ESI:EDI del 
 ; procesador que permiten la operacion con strings en memoria
@@ -301,7 +262,7 @@ print:				;escribe lo que este en ebx
 
     ret
 
-;;; intput: eax=number to print (int)
+;;; intput: eax=char to print (int)
 printChar:
     mov ebx, sys_stdout
     mov ecx, eax
@@ -563,3 +524,53 @@ getMonth:
 	;; error....
 .end:
 	ret
+
+;;; eax = int to write, edi=string destino
+;;; return eax = numero de bytes del string (sizet)
+intToString:
+	push  edx
+	push  ecx
+	push  edi
+	push  ebp
+	mov   ebp, esp
+	mov   ecx, 10
+	push 0x0a  		;End of line \n
+
+.pushDigits:
+	xor   edx, edx	; zero-extend eax
+	div   ecx		; divide by 10; now edx = next digit
+	add   edx, '0'	; decimal value + 30h => ascii digit
+	push  edx		; push the whole dword, cause that's how x86 rolls
+	test  eax, eax	; leading zeros suck
+	jnz   .pushDigits
+
+.popDigits:
+	pop   eax
+	stosb		; don't write the whole dword, just the low byte
+	cmp   esp, ebp	; if esp==ebp, we've popped all the digits
+	jne   .popDigits
+
+	xor   eax, eax	; add trailing nul
+	stosb
+
+	mov   eax, edi
+	pop   ebp
+	pop   edi
+	pop   ecx
+	pop   edx
+	sub   eax, edi	; return number of bytes written
+	ret
+
+;;; eax = size del string
+write_digit:
+	mov edx, eax
+	mov             eax, 4	; system call #4 = sys_write
+	mov             ebx, 1	; file descriptor 1 = stdout
+	mov             ecx, numero ; store *address* of digit into ecx
+	int             80h
+	ret
+
+;;; input eax = dayWeek, ebx=dias del mes, (ecx = ptr a festivos)
+imprimirMes:
+	
+	
