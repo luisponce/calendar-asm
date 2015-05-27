@@ -1,9 +1,9 @@
 ;;; simple calendar with Colombian holydays
 
 global _start			
-global main
+
 	
-extern printf
+
 	
 ;; Macros de llamados al Sistema Operativo
 ;    Los macros se ayudan del pre-procesador
@@ -99,6 +99,9 @@ _else:
 
 section .data
 
+;;; variables
+num:	dq 1
+	
 ;;; DEBUG ONLY
 str_int:	db "int=%d",10,0
 
@@ -121,7 +124,8 @@ CR db 0x0D ; Retorno de carro
 VT db 0x0B ; Tabulador vertical
 HT db 0x09 ; Tabulador horizontal
 BS db 0x08 ; Retroceso 
-
+WS db 0x20 ; Spacio
+	
 ;;; enteros
 const0:	equ 0
 const1:	equ 1
@@ -151,6 +155,15 @@ const26:	equ 26
 const100:	equ 100
 
 const400:	equ 400
+
+;;; chars
+constD:	db "D"
+constL:	db "L"
+constM:	db "M"
+constJ:	db "J"
+constV:	db "V"
+constS:	db "S"
+	
 	
 ;; Variables no inicializadas
 
@@ -162,20 +175,16 @@ exec_argv:  resb 50 ; Argumentos de ejecucion
 is_cot:     resb 1 ; Esta ubucado en colombia
 
 numero:	resb 50
-	
 ;; Codigo (Logica del programa)
 
 section .text
-
-main:	
 	
-;;; _start:
-    
-	mov eax, 1999
-	mov edi, numero
-	call intToString
-	call write_digit
+_start:	
+	mov eax, 2
+	mov ebx, 30
 
+	call imprimirMes	
+	sys_exit 0
 	;; Llama al macro getops inspirado de C: getopts(int, char **);
     getOpt 
 
@@ -534,7 +543,6 @@ intToString:
 	push  ebp
 	mov   ebp, esp
 	mov   ecx, 10
-	push 0x0a  		;End of line \n
 
 .pushDigits:
 	xor   edx, edx	; zero-extend eax
@@ -572,5 +580,173 @@ write_digit:
 
 ;;; input eax = dayWeek, ebx=dias del mes, (ecx = ptr a festivos)
 imprimirMes:
+	;; push ecx		
+	push ebx
+	push eax
+
+	mov eax, WS
+	call printChar
+	mov eax, constD		;domingo
+	call printChar
+
+	mov eax, WS
+	call printChar
+	mov eax, WS
+	call printChar
+
+	mov eax, WS
+	call printChar
+	mov eax, constL		;lunes
+	call printChar
+
+	mov eax, WS
+	call printChar
+	mov eax, WS
+	call printChar
+	
+	mov eax, WS
+	call printChar
+	mov eax, constM		;martes
+	call printChar
+
+	mov eax, WS
+	call printChar
+	mov eax, WS
+	call printChar
+
+	mov eax, WS
+	call printChar
+	mov eax, constM		;miercoles
+	call printChar
+
+	mov eax, WS
+	call printChar
+	mov eax, WS
+	call printChar
+
+	mov eax, WS
+	call printChar
+	mov eax, constJ		;jueves
+	call printChar
+
+	mov eax, WS
+	call printChar
+	mov eax, WS
+	call printChar
+
+	mov eax, WS
+	call printChar
+	mov eax, constV		;viernes
+	call printChar
+
+	mov eax, WS
+	call printChar
+	mov eax, WS
+	call printChar
+
+	mov eax, WS
+	call printChar
+	mov eax, constS		;sabado
+	call printChar
+
+	mov eax, LF		;fin de linea
+	call printChar
+		
+	xor edx, edx
+.if:
+	pop eax
+	cmp edx, eax
+	jge .endIf
+	push eax
+
+	push edx
+	
+	mov eax, WS
+	call printChar
+
+	mov eax, WS
+	call printChar
+
+	mov eax, WS
+	call printChar
+
+	mov eax, WS
+	call printChar
+	
+	pop edx
+
+	inc edx
+	jmp .if
+.endIf:
+	push eax
+	mov ecx, 1
+.while:
+	
+	cmp edx, const7
+	je .comp7
+
+.endIf2:
+	pop eax
+	pop ebx
+
+	mov ecx, dword[num]
+	cmp ecx, ebx
+	push ebx
+	push eax
+
+	jg .end
+
+	;; preguntar por digitos
+	mov eax, 10
+	cmp ecx, eax
+	jl .digit
+.return:	
+	;; preguntar por el festivo
+	mov eax, WS
+	pusha
+	call printChar
+	popa
+	
+	mov eax, dword[num]
+	mov edi, numero
+	call intToString
+	pusha
+	call write_digit
+	popa
+	
+	mov eax, WS
+	pusha
+	call printChar
+	popa
+	
+	mov ecx, dword[num]
+	inc ecx
+	mov dword[num], ecx
+	inc edx
+	
+	jmp .while
+
+.end:
+	pop eax
+	pop ebx
+
+	mov eax, LF
+	call printChar
 	
 	
+	ret
+
+.digit:
+	pusha
+	mov eax, WS
+	call printChar
+	popa
+	jmp .return
+	
+.comp7:
+	mov eax, LF
+	pusha
+	call printChar
+	popa
+	xor edx, edx
+	jmp .endIf2
