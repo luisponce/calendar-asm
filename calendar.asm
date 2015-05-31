@@ -1,7 +1,6 @@
 ;;; simple calendar with Colombian holydays
 
 global _start			
-
 	
 
 	
@@ -175,16 +174,53 @@ exec_argv:  resb 50 ; Argumentos de ejecucion
 is_cot:     resb 1 ; Esta ubucado en colombia
 
 numero:	resb 50
+	
+timezone: resb 8 
+timeseconds: resb 4
+
+current_year resb 4
+current_year_mod resb 4
+
+current_month resb 4
+current_day resb 4
 ;; Codigo (Logica del programa)
 
 section .text
-	
-_start:	
-	mov eax, 2
-	mov ebx, 30
 
-	call imprimirMes	
-	sys_exit 0
+;;main:	
+_start:
+    ;; Get Timezone && CurrentTime (Timestamp) 
+    ; Timezone para colombia es 300
+    ; Timestamp es el timepo actual 
+
+    mov eax, 78
+    mov ebx, timeseconds
+    mov ecx, timezone
+
+    sys_call
+
+	mov eax, [timezone]
+	mov edi, numero
+	call intToString
+	call write_digit
+
+    mov eax, [timeseconds]
+	mov edi, numero
+	call intToString
+	call write_digit
+
+    mov edx, 0
+    mov eax, [timeseconds]
+    mov ecx, 31556926
+
+    div ecx
+
+    add eax, 1970
+
+    mov edi, numero
+    call intToString
+    call write_digit
+
 	;; Llama al macro getops inspirado de C: getopts(int, char **);
     getOpt 
 
