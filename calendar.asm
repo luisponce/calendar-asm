@@ -851,9 +851,24 @@ printYear:
 	mov ecx, 1
 	call dayWeek
 
-	;; TODO: leap year...
-	mov ebx, 28
+	pop edx 		;edx = year
+	push edx
+	pusha
+	;; is leap year?
+	mov eax, edx
+	call isYearLeap
+	cmp eax, const0
+	je .normal
+
+	;; leap
+	popa
+	mov ebx, 29
+	jmp .endLeap
 	
+.normal:
+	popa
+	mov ebx, 28
+.endLeap:
 	call imprimirMes
 
 	mov eax, LF
