@@ -104,6 +104,20 @@ num:	dq 1
 ;;; DEBUG ONLY
 str_int:	db "int=%d",10,0
 
+;;; strings meses
+strEnero:	db "Enero ",0
+strFebrero:	db "Febrero ",0
+strMarzo:	db "Marzo ",0
+strAbril:	db "Abril ",0
+strMayo:	db "Mayo ",0
+strJunio:	db "Junio ",0
+strJulio:	db "Julio ",0
+strAgosto:	db "Agosto ",0
+strSeptiembre:	db "Septiembre ",0
+strOctubre:	db "Octubre ",0
+strNoviembre:	db "Noviembre ",0
+strDiciembre:	db "Diciembre ",0
+	
 ;; Strings del programa
 args_error:	db "Numero de parametros invalidos",0
 
@@ -192,6 +206,10 @@ _start:
     ;; Get Timezone && CurrentTime (Timestamp) 
     ; Timezone para colombia es 300
     ; Timestamp es el timepo actual 
+
+	mov eax, 2015
+	call printYear
+	sys_exit
 
     mov eax, 78
     mov ebx, timeseconds
@@ -299,9 +317,6 @@ print:				;escribe lo que este en ebx
 
     sys_call
 
-    ;; fin de linea
-    mov eax, LF
-    call printChar
 
     popa
 
@@ -716,6 +731,7 @@ imprimirMes:
 .endIf:
 	push eax
 	mov ecx, 1
+	mov dword[num], ecx
 .while:
 	
 	cmp edx, const7
@@ -786,3 +802,322 @@ imprimirMes:
 	popa
 	xor edx, edx
 	jmp .endIf2
+
+;;; eax = year
+printYear:
+	push eax
+
+	;; enero
+	;; nombe del mes
+	mov ebx, strEnero
+	call print
+
+	;; anyo
+
+	;; LF
+	mov eax, LF
+	call printChar
+
+	;; dias del mes
+
+	pop eax
+	push eax
+	mov ebx, 1
+	mov ecx, 1
+	call dayWeek
+
+	mov ebx, 31
+	
+	call imprimirMes
+
+	mov eax, LF
+	call printChar
+
+	;; Febrero
+	;; nombe del mes
+	mov ebx, strFebrero
+	call print
+
+	;; anyo
+
+	;; LF
+	mov eax, LF
+	call printChar
+
+	;; dias del mes
+	pop eax
+	push eax
+	mov ebx, 2
+	mov ecx, 1
+	call dayWeek
+
+	;; TODO: leap year...
+	mov ebx, 28
+	
+	call imprimirMes
+
+	mov eax, LF
+	call printChar
+	
+	;; Marzo
+	;; nombe del mes
+	mov ebx, strMarzo
+	call print
+
+	;; anyo
+
+	;; LF
+	mov eax, LF
+	call printChar
+
+	;; dias del mes
+
+	pop eax
+	push eax
+	mov ebx, 3
+	mov ecx, 1
+	call dayWeek
+
+	mov ebx, 31
+	
+	call imprimirMes
+
+	mov eax, LF
+	call printChar
+
+	;; Abril
+	;; nombe del mes
+	mov ebx, strAbril
+	call print
+
+	;; anyo
+
+	;; LF
+	mov eax, LF
+	call printChar
+
+	;; dias del mes
+
+	pop eax
+	push eax
+	mov ebx, 4
+	mov ecx, 1
+	call dayWeek
+
+	mov ebx, 30
+	
+	call imprimirMes
+
+	mov eax, LF
+	call printChar
+
+	;; Mayo
+	;; nombe del mes
+	mov ebx, strMayo
+	call print
+
+	;; anyo
+
+	;; LF
+	mov eax, LF
+	call printChar
+
+	;; dias del mes
+
+	pop eax
+	push eax
+	mov ebx, 5
+	mov ecx, 1
+	call dayWeek
+
+	mov ebx, 31
+	
+	call imprimirMes
+
+	mov eax, LF
+	call printChar
+
+	;; Junio
+	;; nombe del mes
+	mov ebx, strJunio
+	call print
+
+	;; anyo
+
+	;; LF
+	mov eax, LF
+	call printChar
+
+	;; dias del mes
+
+	pop eax
+	push eax
+	mov ebx, 6
+	mov ecx, 1
+	call dayWeek
+
+	mov ebx, 30
+	
+	call imprimirMes
+	
+	mov eax, LF
+	call printChar
+
+	;; Julio
+	;; nombe del mes
+	mov ebx, strJulio
+	call print
+
+	;; anyo
+
+	;; LF
+	mov eax, LF
+	call printChar
+
+	;; dias del mes
+
+	pop eax
+	push eax
+	mov ebx, 7
+	mov ecx, 1
+	call dayWeek
+
+	mov ebx, 31
+	
+	call imprimirMes
+
+	mov eax, LF
+	call printChar
+
+	;; Agosto
+	;; nombe del mes
+	mov ebx, strAgosto
+	call print
+
+	;; anyo
+
+	;; LF
+	mov eax, LF
+	call printChar
+
+	;; dias del mes
+
+	pop eax
+	push eax
+	mov ebx, 8
+	mov ecx, 1
+	call dayWeek
+
+	mov ebx, 31
+	
+	call imprimirMes
+
+	mov eax, LF
+	call printChar
+
+	;; Septiembre
+	;; nombe del mes
+	mov ebx, strSeptiembre
+	call print
+
+	;; anyo
+
+	;; LF
+	mov eax, LF
+	call printChar
+
+	;; dias del mes
+
+	pop eax
+	push eax
+	mov ebx, 9
+	mov ecx, 1
+	call dayWeek
+
+	mov ebx, 30
+	
+	call imprimirMes
+
+	mov eax, LF
+	call printChar
+
+	;; Octubre
+	;; nombe del mes
+	mov ebx, strOctubre
+	call print
+
+	;; anyo
+
+	;; LF
+	mov eax, LF
+	call printChar
+
+	;; dias del mes
+
+	pop eax
+	push eax
+	mov ebx, 10
+	mov ecx, 1
+	call dayWeek
+
+	mov ebx, 31
+	
+	call imprimirMes
+
+	mov eax, LF
+	call printChar
+
+	;; Noviembre
+	;; nombe del mes
+	mov ebx, strNoviembre
+	call print
+
+	;; anyo
+
+	;; LF
+	mov eax, LF
+	call printChar
+
+	;; dias del mes
+
+	pop eax
+	push eax
+	mov ebx, 11
+	mov ecx, 1
+	call dayWeek
+
+	mov ebx, 30
+	
+	call imprimirMes
+
+	mov eax, LF
+	call printChar
+
+	;; Diciembre
+	;; nombe del mes
+	mov ebx, strDiciembre
+	call print
+
+	;; anyo
+
+	;; LF
+	mov eax, LF
+	call printChar
+
+	;; dias del mes
+
+	pop eax
+	push eax
+	mov ebx, 12
+	mov ecx, 1
+	call dayWeek
+
+	mov ebx, 31
+	
+	call imprimirMes
+
+	mov eax, LF
+	call printChar
+	
+	pop eax
+	ret
