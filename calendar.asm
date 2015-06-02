@@ -207,7 +207,7 @@ _start:
     ; Timezone para colombia es 300
     ; Timestamp es el timepo actual 
 
-	mov eax, 2015
+	mov eax, 2000
 	call printYear
 	sys_exit
 
@@ -813,14 +813,21 @@ printYear:
 	call print
 
 	;; anyo
-
+	pop eax
+	push eax
+	mov edi, numero
+	call intToString
+	pusha
+	call write_digit
+	popa
+	
 	;; LF
 	mov eax, LF
 	call printChar
 
 	;; dias del mes
 
-	pop eax
+	pop eax			;eax = year
 	push eax
 	mov ebx, 1
 	mov ecx, 1
@@ -839,6 +846,13 @@ printYear:
 	call print
 
 	;; anyo
+	pop eax
+	push eax
+	mov edi, numero
+	call intToString
+	pusha
+	call write_digit
+	popa
 
 	;; LF
 	mov eax, LF
@@ -880,6 +894,13 @@ printYear:
 	call print
 
 	;; anyo
+	pop eax
+	push eax
+	mov edi, numero
+	call intToString
+	pusha
+	call write_digit
+	popa
 
 	;; LF
 	mov eax, LF
@@ -906,6 +927,13 @@ printYear:
 	call print
 
 	;; anyo
+	pop eax
+	push eax
+	mov edi, numero
+	call intToString
+	pusha
+	call write_digit
+	popa
 
 	;; LF
 	mov eax, LF
@@ -932,6 +960,13 @@ printYear:
 	call print
 
 	;; anyo
+	pop eax
+	push eax
+	mov edi, numero
+	call intToString
+	pusha
+	call write_digit
+	popa
 
 	;; LF
 	mov eax, LF
@@ -958,6 +993,13 @@ printYear:
 	call print
 
 	;; anyo
+	pop eax
+	push eax
+	mov edi, numero
+	call intToString
+	pusha
+	call write_digit
+	popa
 
 	;; LF
 	mov eax, LF
@@ -984,6 +1026,13 @@ printYear:
 	call print
 
 	;; anyo
+	pop eax
+	push eax
+	mov edi, numero
+	call intToString
+	pusha
+	call write_digit
+	popa
 
 	;; LF
 	mov eax, LF
@@ -1010,6 +1059,13 @@ printYear:
 	call print
 
 	;; anyo
+	pop eax
+	push eax
+	mov edi, numero
+	call intToString
+	pusha
+	call write_digit
+	popa
 
 	;; LF
 	mov eax, LF
@@ -1036,6 +1092,13 @@ printYear:
 	call print
 
 	;; anyo
+	pop eax
+	push eax
+	mov edi, numero
+	call intToString
+	pusha
+	call write_digit
+	popa
 
 	;; LF
 	mov eax, LF
@@ -1062,6 +1125,13 @@ printYear:
 	call print
 
 	;; anyo
+	pop eax
+	push eax
+	mov edi, numero
+	call intToString
+	pusha
+	call write_digit
+	popa
 
 	;; LF
 	mov eax, LF
@@ -1088,6 +1158,13 @@ printYear:
 	call print
 
 	;; anyo
+	pop eax
+	push eax
+	mov edi, numero
+	call intToString
+	pusha
+	call write_digit
+	popa
 
 	;; LF
 	mov eax, LF
@@ -1114,6 +1191,13 @@ printYear:
 	call print
 
 	;; anyo
+	pop eax
+	push eax
+	mov edi, numero
+	call intToString
+	pusha
+	call write_digit
+	popa
 
 	;; LF
 	mov eax, LF
