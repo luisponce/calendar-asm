@@ -222,10 +222,10 @@ _start:
     ; Timezone para colombia es 300
     ; Timestamp es el timepo actual 
 
-	mov eax, 2015
+	mov eax, 2016
 	call festivos
 
-	mov eax, 2015
+	mov eax, 2016
 	call printYear
 	sys_exit
 
@@ -1545,9 +1545,156 @@ festivos:
 
 	mov eax, edx
 
+;;; fin domingos
+
+;;; 6 de enero - Epifanía del Señor
+	pop eax
+	push eax
+	mov ebx, 1
+	mov ecx ,6
+	mov edx, diasEnero
+	call aproximarFestivos
+
+;;; 19 de marzo - Día de San José
+	pop eax
+	push eax
+	mov ebx, 3
+	mov ecx, 19
+	mov edx, diasMarzo
+	call aproximarFestivos
+
+;;; 29 de Junio San Pedro y San Pablo
+	pop eax
+	push eax
+	mov ebx, 6
+	mov ecx, 29
+	mov edx, diasJunio
+	call aproximarFestivos
+
+;;; 23 de agosto - Asunción de la Virgen
+	pop eax
+	push eax
+	mov ebx, 8
+	mov ecx, 23
+	mov edx, diasAgosto
+	call aproximarFestivos
+
+;;; 12 de octubre - Día de la Raza
+	pop eax
+	push eax
+	mov ebx, 10
+	mov ecx, 12
+	mov edx, diasOctubre
+	call aproximarFestivos
+
+;;; 1 de noviembre - Todos los Santos
+	pop eax
+	push eax
+	mov ebx, 11
+	mov ecx, 1
+	mov edx, diasNoviembre
+	call aproximarFestivos
+
+;;; 11 de noviembre - Independencia de Cartagena.
+	pop eax
+	push eax
+	mov ebx, 11
+	mov ecx, 11
+	mov edx, diasNoviembre
+	call aproximarFestivos
+
+;;; pascua
+	
 	pop eax
 	ret
+
+;;; eax= year, ebx = mes, ecx = dia, edx =  ptr a arregloFestivosMes
+aproximarFestivos:
+	push ecx
+	mov esi, ebx
+	mov edi, edx
+	call dayWeek
+
+	mov ebx, 8
+	sub ebx, eax
+	xor edx, edx
+	mov eax, ebx
+	mov ebx, 7
+	div ebx
+	mov eax, edx
+	pop ebx
+	push ebx
+	add eax, ebx
+
+	pop ebx
 	
+	;; compara si se pasa del mes
+	mov ecx, 5
+	cmp esi, ecx
+	je .mayo
+
+	mov ecx, 6
+	cmp esi, ecx
+	je .junio
+
+	mov ecx, 7
+	cmp esi, ecx
+	je .julio
+
+	mov ecx, 8
+	cmp esi, ecx
+	je .agosto
+	
+.end:
+	
+	dec eax
+	
+	mov [edi+eax*4], ebx
+.endFinal:
+	ret
+
+.mayo:
+	mov ebx, 31
+	cmp eax, ebx
+	jle .end
+
+	sub eax, ebx
+	mov edi, diasJunio
+	
+	jmp .end
+	
+.junio:
+	mov ebx, 30
+	cmp eax, ebx
+	jle .end
+
+	sub eax, ebx
+	mov edi, diasJulio
+	
+	jmp .end
+
+.julio:
+	mov ebx, 31
+	cmp eax, ebx
+	jle .end
+
+	sub eax, ebx
+	mov edi, diasAgosto
+	
+	jmp .end
+
+.agosto:
+	mov ebx, 31
+	cmp eax, ebx
+	jle .end
+
+	sub eax, ebx
+	mov edi, diasSeptiembre
+	
+	jmp .end
+
+	
+
 ;;; eax = mes, ebx = dia
 ;;; return eax = festivo
 getArrFestivo:	
