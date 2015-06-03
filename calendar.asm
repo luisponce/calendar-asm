@@ -197,6 +197,8 @@ current_year_mod resb 4
 
 current_month resb 4
 current_day resb 4
+
+current_month_days resb 4
 ;; Codigo (Logica del programa)
 
 section .text
@@ -207,9 +209,9 @@ _start:
     ; Timezone para colombia es 300
     ; Timestamp es el timepo actual 
 
-	mov eax, 2015
-	call printYear
-	sys_exit
+	;mov eax, 2015
+	;call printYear
+	;sys_exit
 
     mov eax, 78
     mov ebx, timeseconds
@@ -217,27 +219,119 @@ _start:
 
     sys_call
 
-	mov eax, [timezone]
-	mov edi, numero
-	call intToString
-	call write_digit
+	;mov eax, [timezone]
+	;mov edi, numero
+	;call intToString
+	;call write_digit
 
-    mov eax, [timeseconds]
-	mov edi, numero
-	call intToString
-	call write_digit
+    ;mov eax, [timeseconds]
+	;mov edi, numero
+	;call intToString
+	;call write_digit
 
+; Le resto los segundos de un ano al timestamp
     mov edx, 0
     mov eax, [timeseconds]
     mov ecx, 31556926
 
     div ecx
 
+; Como esa div nos da los anos que han pasado desde 1970,
+; le sumo 1970 para obtener el ano actual (ej 2015)
     add eax, 1970
 
-    mov edi, numero
-    call intToString
-    call write_digit
+    mov [current_year], eax
+    mov [current_year_mod], edx
+
+; Lo que sobra de la div son los segundos trascurridos del 
+; ano actual, los divido entre los segundos de un dia y 
+; obtengo los dias que han pasado desde el 01 ENE del presente 
+; ano.
+    mov edx, 0
+    mov eax, [current_year_mod]
+    mov ecx, 86400
+
+    div ecx
+
+    ; EN EAX ESTAN LOS DIAS PASARON DESDE EL 01 ENER ANO ACTUAL
+
+    mov esi, 0 ; Current Month
+    mov edi, eax ; Los dias que faltan por iterar
+
+_date_loop:
+    
+; Formula de Caro: (Modulo 7)
+    mov edx, 0
+    mov eax, esi
+    mov ecx, 7
+
+    div ecx
+
+; Modulo 2 del resultado del mes
+    mov eax, edx
+    mov edx, 0
+    mov ecx, 2
+
+    div ecx
+
+    mov eax, edx
+
+; Compara si es febrero, en ese caso aplica la exepcion de Feb
+    cmp esi, 1
+    je _is_febrary
+    
+    cmp eax, 0 ; compara si es par
+    je _is_par
+    
+; Si es impar se le resta 30 dias al contador de dias
+    mov dword[current_month_days], 30
+    sub edi, 30
+    jmp _is_par_end
+
+; Si es par se le resta 31 dias al contador de dias 
+_is_par:
+    mov dword[current_month_days], 31
+    sub edi, 31
+    jmp _is_par_end
+
+; FebNormal le resta 28 dias al contador de dias
+_is_febrary:
+    mov eax, [current_year]
+    call isYearLeap
+
+    cmp eax, 1
+    je _is_febrary_leap
+
+    mov dword[current_month_days], 28
+    sub edi, 28
+    jmp _is_par_end
+
+; FebLeap le resta 29 dias al contador de dias
+_is_febrary_leap:
+    mov dword[current_month_days], 29
+    sub edi, 29
+
+_is_par_end:
+    inc esi ; Incremento el contador de meses
+
+    ; Comparamos si la fecha es negativa salimos del ciclo
+    cmp edi, 0
+    jge _date_loop
+
+    ; Le sumo los dias que resto del ultimo mes
+    add edi, [current_month_days]
+    
+    mov [current_day], edi
+    mov [current_month], esi 
+
+    ;;; AQUI TERMINA EL CALCULO DEL CURRENT DATE
+
+
+
+    ;mov eax, [current_year_mod]
+    ;mov edi, numero
+    ;call intToString
+    ;call write_digit
 
 	;; Llama al macro getops inspirado de C: getopts(int, char **);
     getOpt 
