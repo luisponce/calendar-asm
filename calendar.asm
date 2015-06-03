@@ -771,7 +771,7 @@ imprimirMes:
 	cmp ecx, eax
 	jl .digit
 .return:	
-	;; preguntar por el festivo	
+	;; preguntar por el festivo
 	pop esi
 	pop edi
 	pop ecx
@@ -1306,7 +1306,27 @@ festivos:
 	mov eax, edx
 
 .ifFeb:
-	mov ebx, 28
+	pop edi
+	push edi
+	pusha
+	mov eax, edi
+	call isYearLeap
+	mov ebx, 0
+	cmp eax, ebx
+	je .notLeap
+
+	mov esi, 29
+	jmp .conti
+
+.notLeap:
+	mov esi,28
+
+.conti:
+	pop edi
+	push esi
+	popa
+	mov esi, edi
+	mov ebx, esi
 	cmp eax, ebx
 	jg .endIfFeb
 
@@ -1319,7 +1339,7 @@ festivos:
 	jmp .ifFeb
 
 .endIfFeb:
-	mov ebx, 28
+	mov ebx, esi
 	xor edx, edx
 	div ebx
 
