@@ -138,6 +138,7 @@ VT db 0x0B ; Tabulador vertical
 HT db 0x09 ; Tabulador horizontal
 BS db 0x08 ; Retroceso 
 WS db 0x20 ; Spacio
+
 	
 ;;; enteros
 const0:	equ 0
@@ -176,7 +177,21 @@ constM:	db "M"
 constJ:	db "J"
 constV:	db "V"
 constS:	db "S"
+F:	db "F"
 	
+;;; arreglos 
+diasEnero:	dd 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+diasFebrero:	dd 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+diasMarzo:	dd 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+diasAbril:	dd 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+diasMayo:	dd 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+diasJunio:	dd 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+diasJulio:	dd 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20,0,0,0,0,0,0,0,0,0,0,0
+diasAgosto:	dd 0,0,0,0,0,0,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+diasSeptiembre:	dd 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+diasOctubre:	dd 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+diasNoviembre:	dd 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+diasDiciembre:	dd 0,0,0,0,0,0,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,25,0,0,0,0,0,0
 	
 ;; Variables no inicializadas
 
@@ -209,9 +224,18 @@ _start:
     ; Timezone para colombia es 300
     ; Timestamp es el timepo actual 
 
+<<<<<<< HEAD
 	;mov eax, 2015
 	;call printYear
 	;sys_exit
+=======
+	mov eax, 2015
+	call festivos
+
+	mov eax, 2015
+	call printYear
+	sys_exit
+>>>>>>> 3ffb5667b8a75931cce08c498e656f0b35babb59
 
     mov eax, 78
     mov ebx, timeseconds
@@ -677,7 +701,7 @@ getMonth:
 .error:
 	;; error....
 .end:
-	ret
+	ret			
 
 ;;; eax = int to write, edi=string destino
 ;;; return eax = numero de bytes del string (sizet)
@@ -723,9 +747,9 @@ write_digit:
 	int             80h
 	ret
 
-;;; input eax = dayWeek, ebx=dias del mes, (ecx = ptr a festivos)
+;;; input eax = dayWeek, ebx=dias del mes, ecx = mes
 imprimirMes:
-	;; push ecx		
+	push ecx		
 	push ebx
 	push eax
 
@@ -848,11 +872,34 @@ imprimirMes:
 	jl .digit
 .return:	
 	;; preguntar por el festivo
+	pop esi
+	pop edi
+	pop ecx
+	push ecx
+	push edi
+	push esi
+	
+	pusha
+	mov eax, ecx
+	mov ebx, dword[num]
+
+	call getArrFestivo
+
+	mov ebx,0
+	cmp eax, ebx
+	je .noFest
+
+	mov eax, F
+	jmp .endFest
+	
+.noFest:
 	mov eax, WS
+
+.endFest:
 	pusha
 	call printChar
 	popa
-	
+	popa
 	mov eax, dword[num]
 	mov edi, numero
 	call intToString
@@ -875,7 +922,8 @@ imprimirMes:
 .end:
 	pop eax
 	pop ebx
-
+	pop ecx
+	
 	mov eax, LF
 	call printChar
 	
@@ -907,21 +955,28 @@ printYear:
 	call print
 
 	;; anyo
-
+	pop eax
+	push eax
+	mov edi, numero
+	call intToString
+	pusha
+	call write_digit
+	popa
+	
 	;; LF
 	mov eax, LF
 	call printChar
 
 	;; dias del mes
 
-	pop eax
+	pop eax			;eax = year
 	push eax
 	mov ebx, 1
 	mov ecx, 1
 	call dayWeek
 
 	mov ebx, 31
-	
+	mov ecx, 1
 	call imprimirMes
 
 	mov eax, LF
@@ -933,6 +988,13 @@ printYear:
 	call print
 
 	;; anyo
+	pop eax
+	push eax
+	mov edi, numero
+	call intToString
+	pusha
+	call write_digit
+	popa
 
 	;; LF
 	mov eax, LF
@@ -963,6 +1025,7 @@ printYear:
 	popa
 	mov ebx, 28
 .endLeap:
+	mov ecx, 2
 	call imprimirMes
 
 	mov eax, LF
@@ -974,6 +1037,13 @@ printYear:
 	call print
 
 	;; anyo
+	pop eax
+	push eax
+	mov edi, numero
+	call intToString
+	pusha
+	call write_digit
+	popa
 
 	;; LF
 	mov eax, LF
@@ -988,7 +1058,7 @@ printYear:
 	call dayWeek
 
 	mov ebx, 31
-	
+	mov ecx, 3
 	call imprimirMes
 
 	mov eax, LF
@@ -1000,6 +1070,13 @@ printYear:
 	call print
 
 	;; anyo
+	pop eax
+	push eax
+	mov edi, numero
+	call intToString
+	pusha
+	call write_digit
+	popa
 
 	;; LF
 	mov eax, LF
@@ -1014,7 +1091,7 @@ printYear:
 	call dayWeek
 
 	mov ebx, 30
-	
+	mov ecx, 4
 	call imprimirMes
 
 	mov eax, LF
@@ -1026,6 +1103,13 @@ printYear:
 	call print
 
 	;; anyo
+	pop eax
+	push eax
+	mov edi, numero
+	call intToString
+	pusha
+	call write_digit
+	popa
 
 	;; LF
 	mov eax, LF
@@ -1040,7 +1124,7 @@ printYear:
 	call dayWeek
 
 	mov ebx, 31
-	
+	mov ecx, 5
 	call imprimirMes
 
 	mov eax, LF
@@ -1052,6 +1136,13 @@ printYear:
 	call print
 
 	;; anyo
+	pop eax
+	push eax
+	mov edi, numero
+	call intToString
+	pusha
+	call write_digit
+	popa
 
 	;; LF
 	mov eax, LF
@@ -1066,7 +1157,7 @@ printYear:
 	call dayWeek
 
 	mov ebx, 30
-	
+	mov ecx, 6
 	call imprimirMes
 	
 	mov eax, LF
@@ -1078,6 +1169,13 @@ printYear:
 	call print
 
 	;; anyo
+	pop eax
+	push eax
+	mov edi, numero
+	call intToString
+	pusha
+	call write_digit
+	popa
 
 	;; LF
 	mov eax, LF
@@ -1092,7 +1190,7 @@ printYear:
 	call dayWeek
 
 	mov ebx, 31
-	
+	mov ecx, 7
 	call imprimirMes
 
 	mov eax, LF
@@ -1104,6 +1202,13 @@ printYear:
 	call print
 
 	;; anyo
+	pop eax
+	push eax
+	mov edi, numero
+	call intToString
+	pusha
+	call write_digit
+	popa
 
 	;; LF
 	mov eax, LF
@@ -1118,7 +1223,7 @@ printYear:
 	call dayWeek
 
 	mov ebx, 31
-	
+	mov ecx, 8
 	call imprimirMes
 
 	mov eax, LF
@@ -1130,6 +1235,13 @@ printYear:
 	call print
 
 	;; anyo
+	pop eax
+	push eax
+	mov edi, numero
+	call intToString
+	pusha
+	call write_digit
+	popa
 
 	;; LF
 	mov eax, LF
@@ -1142,9 +1254,9 @@ printYear:
 	mov ebx, 9
 	mov ecx, 1
 	call dayWeek
-
-	mov ebx, 30
 	
+	mov ebx, 30
+	mov ecx, 9
 	call imprimirMes
 
 	mov eax, LF
@@ -1156,6 +1268,13 @@ printYear:
 	call print
 
 	;; anyo
+	pop eax
+	push eax
+	mov edi, numero
+	call intToString
+	pusha
+	call write_digit
+	popa
 
 	;; LF
 	mov eax, LF
@@ -1170,7 +1289,7 @@ printYear:
 	call dayWeek
 
 	mov ebx, 31
-	
+	mov ecx, 10
 	call imprimirMes
 
 	mov eax, LF
@@ -1182,6 +1301,13 @@ printYear:
 	call print
 
 	;; anyo
+	pop eax
+	push eax
+	mov edi, numero
+	call intToString
+	pusha
+	call write_digit
+	popa
 
 	;; LF
 	mov eax, LF
@@ -1196,7 +1322,7 @@ printYear:
 	call dayWeek
 
 	mov ebx, 30
-	
+	mov ecx, 11
 	call imprimirMes
 
 	mov eax, LF
@@ -1208,6 +1334,13 @@ printYear:
 	call print
 
 	;; anyo
+	pop eax
+	push eax
+	mov edi, numero
+	call intToString
+	pusha
+	call write_digit
+	popa
 
 	;; LF
 	mov eax, LF
@@ -1222,11 +1355,410 @@ printYear:
 	call dayWeek
 
 	mov ebx, 31
-	
+	mov ecx, 12
 	call imprimirMes
 
 	mov eax, LF
 	call printChar
 	
 	pop eax
+	ret
+	
+;;; eax = year
+festivos:			
+	push eax
+;;; domingos
+
+;;; enero
+	mov ebx, 1
+	mov ecx, 1
+	call dayWeek
+
+	mov ebx,eax
+	mov eax, 7
+	sub eax, ebx
+
+	mov ebx, 7
+	xor edx, edx
+	div ebx
+	mov eax, edx
+
+	inc eax
+
+.ifEne:
+	mov ebx, 31
+	cmp eax, ebx
+	jg .endIfEne
+
+	mov esi, eax
+	dec eax
+	mov [diasEnero+eax*4], esi
+	inc eax
+	mov ebx, 7
+	add eax, ebx
+	jmp .ifEne
+
+.endIfEne:
+	mov ebx, 31
+	xor edx, edx
+	div ebx
+
+	mov eax, edx
+
+.ifFeb:
+	pop edi
+	push edi
+	pusha
+	mov eax, edi
+	call isYearLeap
+	mov ebx, 0
+	cmp eax, ebx
+	je .notLeap
+
+	mov esi, 29
+	jmp .conti
+
+.notLeap:
+	mov esi,28
+
+.conti:
+	pop edi
+	push esi
+	popa
+	mov esi, edi
+	mov ebx, esi
+	cmp eax, ebx
+	jg .endIfFeb
+
+	mov esi, eax
+	dec eax
+	mov [diasFebrero+eax*4], esi
+	inc eax
+	mov ebx, 7
+	add eax, ebx
+	jmp .ifFeb
+
+.endIfFeb:
+	mov ebx, esi
+	xor edx, edx
+	div ebx
+
+	mov eax, edx
+
+.ifMar:
+	mov ebx, 31
+	cmp eax, ebx
+	jg .endIfMar
+
+	mov esi, eax
+	dec eax
+	mov [diasMarzo+eax*4], esi
+	inc eax
+	mov ebx, 7
+	add eax, ebx
+	jmp .ifMar
+
+.endIfMar:
+	mov ebx, 31
+	xor edx, edx
+	div ebx
+
+	mov eax, edx
+
+.ifAbr:
+	mov ebx, 30
+	cmp eax, ebx
+	jg .endIfAbr
+
+	mov esi, eax
+	dec eax
+	mov [diasAbril+eax*4], esi
+	inc eax
+	mov ebx, 7
+	add eax, ebx
+	jmp .ifAbr
+
+.endIfAbr:
+	mov ebx, 30
+	xor edx, edx
+	div ebx
+
+	mov eax, edx
+
+.ifMay:
+	mov ebx, 31
+	cmp eax, ebx
+	jg .endIfMay
+
+	mov esi, eax
+	dec eax
+	mov [diasMayo+eax*4], esi
+	inc eax
+	mov ebx, 7
+	add eax, ebx
+	jmp .ifMay
+
+.endIfMay:
+	mov ebx, 31
+	xor edx, edx
+	div ebx
+
+	mov eax, edx
+
+.ifJun:
+	mov ebx, 30
+	cmp eax, ebx
+	jg .endIfJun
+
+	mov esi, eax
+	dec eax
+	mov [diasJunio+eax*4], esi
+	inc eax
+	mov ebx, 7
+	add eax, ebx
+	jmp .ifJun
+
+.endIfJun:
+	mov ebx, 30
+	xor edx, edx
+	div ebx
+
+	mov eax, edx
+
+.ifJul:
+	mov ebx, 31
+	cmp eax, ebx
+	jg .endIfJul
+
+	mov esi, eax
+	dec eax
+	mov [diasJulio+eax*4], esi
+	inc eax
+	mov ebx, 7
+	add eax, ebx
+	jmp .ifJul
+
+.endIfJul:
+	mov ebx, 31
+	xor edx, edx
+	div ebx
+
+	mov eax, edx
+
+.ifAgo:
+	mov ebx, 31
+	cmp eax, ebx
+	jg .endIfAgo
+
+	mov esi, eax
+	dec eax
+	mov [diasAgosto+eax*4], esi
+	inc eax
+	mov ebx, 7
+	add eax, ebx
+	jmp .ifAgo
+
+.endIfAgo:
+	mov ebx, 31
+	xor edx, edx
+	div ebx
+
+	mov eax, edx
+
+.ifSep:
+	mov ebx, 30
+	cmp eax, ebx
+	jg .endIfSep
+
+	mov esi, eax
+	dec eax
+	mov [diasSeptiembre+eax*4], esi
+	inc eax
+	mov ebx, 7
+	add eax, ebx
+	jmp .ifSep
+
+.endIfSep:
+	mov ebx, 30
+	xor edx, edx
+	div ebx
+
+	mov eax, edx
+
+.ifOct:
+	mov ebx, 31
+	cmp eax, ebx
+	jg .endIfOct
+
+	mov esi, eax
+	dec eax
+	mov [diasOctubre+eax*4], esi
+	inc eax
+	mov ebx, 7
+	add eax, ebx
+	jmp .ifOct
+
+.endIfOct:
+	mov ebx, 31
+	xor edx, edx
+	div ebx
+
+	mov eax, edx
+
+.ifNov:
+	mov ebx, 30
+	cmp eax, ebx
+	jg .endIfNov
+
+	mov esi, eax
+	dec eax
+	mov [diasNoviembre+eax*4], esi
+	inc eax
+	mov ebx, 7
+	add eax, ebx
+	jmp .ifNov
+
+.endIfNov:
+	mov ebx, 30
+	xor edx, edx
+	div ebx
+
+	mov eax, edx
+
+.ifDic:
+	mov ebx, 31
+	cmp eax, ebx
+	jg .endIfDic
+
+	mov esi, eax
+	dec eax
+	mov [diasDiciembre+eax*4], esi
+	inc eax
+	mov ebx, 7
+	add eax, ebx
+	jmp .ifDic
+
+.endIfDic:
+	mov ebx, 31
+	xor edx, edx
+	div ebx
+
+	mov eax, edx
+
+	pop eax
+	ret
+	
+;;; eax = mes, ebx = dia
+;;; return eax = festivo
+getArrFestivo:	
+	mov ecx, 1
+	cmp eax, ecx
+	jne .feb
+
+	dec ebx
+	mov eax, [diasEnero+ebx*4]
+	inc ebx
+	jmp .end
+.feb:
+	mov ecx, 2
+	cmp eax, ecx
+	jne .mar
+
+	dec ebx
+	mov eax, [diasFebrero+ebx*4]
+	inc ebx
+	jmp .end	
+.mar:
+	mov ecx, 3
+	cmp eax, ecx
+	jne .abr
+
+	dec ebx
+	mov eax, [diasMarzo+ebx*4]
+	inc ebx
+	jmp .end	
+.abr:
+	mov ecx, 4
+	cmp eax, ecx
+	jne .may
+
+	dec ebx
+	mov eax, [diasAbril+ebx*4]
+	inc ebx
+	jmp .end	
+.may:
+	mov ecx, 5
+	cmp eax, ecx
+	jne .jun
+
+	dec ebx
+	mov eax, [diasMayo+ebx*4]
+	inc ebx
+	jmp .end	
+.jun:
+	mov ecx, 6
+	cmp eax, ecx
+	jne .jul
+
+	dec ebx
+	mov eax, [diasJunio+ebx*4]
+	inc ebx
+	jmp .end	
+
+.jul:
+	mov ecx, 7
+	cmp eax, ecx
+	jne .ago
+
+	dec ebx
+	mov eax, [diasJulio+ebx*4]
+	inc ebx
+	jmp .end
+
+.ago:
+	mov ecx, 8
+	cmp eax, ecx
+	jne .sep
+
+	dec ebx
+	mov eax, [diasAgosto+ebx*4]
+	inc ebx
+	jmp .end	
+.sep:
+	mov ecx, 9
+	cmp eax, ecx
+	jne .oct
+
+	dec ebx
+	mov eax, [diasSeptiembre+ebx*4]
+	inc ebx
+	jmp .end	
+
+.oct:
+	mov ecx, 10
+	cmp eax, ecx
+	jne .nov
+
+	dec ebx
+	mov eax, [diasOctubre+ebx*4]
+	inc ebx
+	jmp .end	
+.nov:
+	mov ecx, 11
+	cmp eax, ecx
+	jne .dic
+
+	dec ebx
+	mov eax, [diasNoviembre+ebx*4]
+	inc ebx
+	jmp .end	
+.dic:
+	dec ebx
+	mov eax, [diasDiciembre+ebx*4]
+	inc ebx
+	jmp .end	
+
+
+	
+.end:
 	ret
