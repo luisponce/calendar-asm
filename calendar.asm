@@ -139,6 +139,22 @@ HT db 0x09 ; Tabulador horizontal
 BS db 0x08 ; Retroceso 
 WS db 0x20 ; Spacio
 
+;;; variables para la pascua
+a:	dw 0
+b:	dw 0
+c:	dw 0
+d:	dw 0
+e:	dw 0
+f:	dw 0
+g:	dw 0
+h:	dw 0
+i:	dw 0
+k:	dw 0
+l:	dw 0
+m:	dw 0
+n:	dw 0
+p:	dw 0
+
 	
 ;;; enteros
 const0:	equ 0
@@ -214,6 +230,9 @@ current_month resb 4
 current_day resb 4
 
 current_month_days resb 4
+
+;;; variables para la pascua
+
 ;; Codigo (Logica del programa)
 
 section .text
@@ -1704,6 +1723,126 @@ festivos:
 	call aproximarFestivos
 
 ;;; pascua
+	pop eax
+	push eax
+	mov ebx, 19
+	xor edx, edx
+	div ebx
+	mov eax,edx
+.a:	mov [a],eax
+
+	pop eax
+	push eax
+	mov ebx,100
+	xor edx,edx
+	div ebx
+.b:	mov [b], eax
+.c:	mov [c], edx
+
+	movzx eax, word[b]
+	mov ebx, 4
+	xor edx, edx
+	div ebx
+.d:	mov [d], eax
+.e:	mov [e], edx
+
+	movzx eax, word[b]
+	mov ebx, 8
+	add eax, ebx
+	mov ebx, 25
+	xor edx,edx
+	div ebx
+.f:	mov [f],eax
+
+	movzx eax, word[b]
+	movzx ebx, word[f]
+	sub eax,ebx
+	mov ebx,1
+	add eax, ebx
+	mov ebx,3
+	xor edx,edx
+	div ebx
+.g:	mov [g], eax
+
+	mov eax,19
+	movzx ebx, word[a]
+	mul ebx
+	movzx ebx, word[b]
+	add eax,ebx
+	movzx ebx, word[d]
+	sub eax,ebx
+	movzx ebx, word[g]
+	sub eax,ebx
+	mov ebx,15
+	add eax,ebx
+	mov ebx,30
+	xor edx,edx
+	div ebx
+.h:	mov [h],edx
+
+	movzx eax, word[c]
+	mov ebx,4
+	xor edx,edx
+	div ebx
+.i:	mov [i],eax
+.k:	mov [k],edx
+
+	mov ebx,2
+	movzx eax, word[e]
+	mul ebx
+	push eax
+	movzx eax, word[i]
+	mul ebx
+	pop ebx
+	add eax,ebx
+	mov ebx,32
+	add eax,ebx
+	movzx ebx, word[h]
+	sub eax,ebx
+	movzx ebx, word[k]
+	sub eax,ebx
+	mov ebx,7
+	xor edx,edx
+	div ebx
+.l:	mov [l], edx
+
+	mov eax,11
+	movzx ebx, word[h]
+	mul ebx
+	push eax
+	mov eax,22
+	movzx ebx, word[l]
+	mul ebx
+	pop ebx
+	add eax,ebx
+	movzx ebx, word[a]
+	add eax, ebx
+	mov ebx,451
+	xor edx,edx
+	div ebx
+.m:	mov [m],eax
+
+	mov eax,7
+	movzx ebx, word[m]
+	mul ebx
+	push eax
+	movzx eax, word[h]
+	movzx ebx, word[l]
+	add eax,ebx
+	pop ebx
+	sub eax,ebx
+	mov ebx,144
+	add eax,ebx
+	mov ebx,31
+	xor edx,edx
+	div ebx
+	dec eax
+.n:	mov [n],eax
+	inc edx
+	inc edx
+.p:	mov [p], edx
+.stop:
+	
 	
 	pop eax
 	ret
