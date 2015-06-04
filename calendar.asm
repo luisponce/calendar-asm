@@ -2,8 +2,6 @@
 
 global _start			
 	
-
-	
 ;; Macros de llamados al Sistema Operativo
 ;    Los macros se ayudan del pre-procesador
 ;
@@ -73,7 +71,7 @@ _conArgumentos:
     jmp _parseoptsRet
     
     _parseoptsIsYear:
-    
+        
         mov byte[exec_mode], 1
 
         jmp _parseoptsRet
@@ -84,11 +82,16 @@ _conArgumentos:
 
     _parseoptsRet:
    
-    pop eax     ;pop args[0]
-    pop eax     ;pop args[1]
-    pop eax     ;pop args[2]
 
-    mov [exec_argv], eax
+    ;pop eax     ;pop args[0]
+    ;pop eax     ;pop args[1]
+    ;pop eax     ;pop args[2]
+
+
+    mov eax, [esp + 8]
+    mov ebx, [eax]
+    mov [exec_argv], ebx
+
 
 _else:
 
@@ -117,7 +120,8 @@ strSeptiembre:	db "Septiembre ",0
 strOctubre:	db "Octubre ",0
 strNoviembre:	db "Noviembre ",0
 strDiciembre:	db "Diciembre ",0
-	
+
+prueba db "123456"
 ;; Strings del programa
 args_error:	db "Numero de parametros invalidos",0
 
@@ -242,20 +246,45 @@ _start:
     ;; Get Timezone && CurrentTime (Timestamp) 
     ; Timezone para colombia es 300
     ; Timestamp es el timepo actual 
+    getOpt
 
+    mov edx, exec_argv
+    call stringToInt
 
+    ;mov edi, numero
+    ;call intToString
+    ;call write_digit
+    ;sys_exit
+    
+    call festivos
 
-	;mov eax, 2015
-	;call printYear
-	;sys_exit
+    mov edx, exec_argv
+    call stringToInt
 
-	mov eax, 2016
-	call festivos
-
-	mov eax, 2016
 	call printYear
-	sys_exit
+	sys_exit 0
 
+
+    cmp byte[exec_mode], 0
+    je .isCurrentYear
+
+    cmp byte[exec_mode], 1
+    je .isParamYear
+
+
+.isParamYear:
+    mov edx, exec_argv
+    call stringToInt
+
+    call festivos
+
+    mov edx, exec_argv
+    call stringToInt
+
+    call printYear
+    jmp _exit
+
+.isCurrentYear:
     mov eax, 78
     mov ebx, timeseconds
     mov ecx, timezone
@@ -370,27 +399,28 @@ _is_par_end:
     ;;; AQUI TERMINA EL CALCULO DEL CURRENT DATE
 
 
+    mov eax, [current_year]
 
-    ;mov eax, [current_year_mod]
-    ;mov edi, numero
-    ;call intToString
-    ;call write_digit
+    call festivos
 
-	;; Llama al macro getops inspirado de C: getopts(int, char **);
-    getOpt 
+    mov eax, [current_year]
+
+    call printYear
+    ;call
 
     ;Suma a exec_mode 48 para pasar el numero a char
-    mov eax, [exec_mode]
-    add eax, 48
-    mov [exec_mode], eax
+    ;mov eax, [exec_mode]
+    ;add eax, 48
+    ;mov [exec_mode], eax
 
-    mov eax, 4
-    mov ebx, 1
-    mov ecx, [exec_argv]
-    mov edx, 8
+    ;mov eax, 4
+    ;mov ebx, 1
+    ;mov ecx, [exec_argv]
+    ;mov edx, 8
 
-    sys_call
+    ;sys_call
 
+_exit:
 .exit:
     ;; salir con exito
     sys_exit 0
@@ -458,6 +488,30 @@ print:				;escribe lo que este en ebx
     popa
 
     ret
+
+stringToInt:
+    xor eax, eax ; Eax = 0 
+.top:
+    ; Opetener el caracter del string
+    movzx ecx, byte[edx]
+
+    inc edx ; Incrementa el puntero del string
+    cmp ecx, '0'
+
+    jb .done
+
+    cmp ecx, '9'
+    ja .done
+
+    ; Convertir el caracter a un numero
+    sub ecx, '0'
+    imul eax, 10
+    add eax, ecx
+    jmp .top
+
+.done:
+    ret
+
 
 ;;; intput: eax=char to print (int)
 printChar:
@@ -964,7 +1018,6 @@ imprimirMes:
 	xor edx, edx
 	jmp .endIf2
 
-;;; eax = year
 printYear:
 	push eax
 
