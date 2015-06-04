@@ -191,6 +191,7 @@ const100:	equ 100
 const400:	equ 400
 
 ;;; chars
+freeMem:	db "aa"
 constD:	db "D"
 constL:	db "L"
 constM:	db "M"
