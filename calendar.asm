@@ -249,10 +249,10 @@ _start:
 	;call printYear
 	;sys_exit
 
-	mov eax, 2016
+	mov eax, 2015
 	call festivos
 
-	mov eax, 2016
+	mov eax, 2015
 	call printYear
 	sys_exit
 
@@ -1837,12 +1837,47 @@ festivos:
 	xor edx,edx
 	div ebx
 	dec eax
-.n:	mov [n],eax
+.n:	mov [n],eax		;mes
 	inc edx
 	inc edx
-.p:	mov [p], edx
+.p:	mov [p], edx		;dia
 .stop:
 	
+	;; viernes Santo
+	xor edx, edx		;cont = 0
+	movzx eax, word[p]
+	dec eax
+	dec eax			;dia-=2
+.again:
+	mov ebx, 0
+	cmp eax, ebx
+	jg .noProb
+
+	mov ebx, 31
+	add eax, ebx		;dia = 31 + dia
+	dec eax
+	mov [diasMarzo+eax*4],eax
+	jmp .endEaster
+	
+.noProb:
+	movzx ebx, word[n]
+	mov ecx, 4
+	cmp ebx, ecx
+	jne .easterMarzo
+
+	dec eax
+	mov [diasAbril+eax*4],eax
+	jmp .endEaster
+
+.easterMarzo:
+	dec eax
+	mov [diasMarzo+eax*4],eax
+
+.endEaster:
+	inc edx
+	mov ebx, 2
+	cmp edx, ebx
+	jne .again
 	
 	pop eax
 	ret
