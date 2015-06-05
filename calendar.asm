@@ -83,14 +83,17 @@ _conArgumentos:
     _parseoptsRet:
    
 
-    ;pop eax     ;pop args[0]
-    ;pop eax     ;pop args[1]
-    ;pop eax     ;pop args[2]
+    pop eax     ;pop args[0]
+    pop eax     ;pop args[1]
+    pop eax     ;pop args[2]
 
+    mov [exec_argv], eax
 
-    mov eax, [esp + 8]
-    mov ebx, [eax]
-    mov [exec_argv], ebx
+    ;mov eax, [esp + 8]
+    ;mov ebx, [eax]
+    ;mov ecx, [eax + 16]
+    ;mov [exec_argv], ebx
+    ;mov [exec_argv + 16], ecx
 
 
 _else:
@@ -107,11 +110,18 @@ num:	dq 1
 ;;; DEBUG ONLY
 str_int:	db "int=%d",10,0
 
-diaHabilStr db "fue dia habil",0
-diaFestivo db "fue festivo",0
+diaHabilStr db " es dia habil",0
+diaFestivo db " es festivo",0
 diaEl db "El dia ",0
 diaDe db " de ",0
 
+strDomingo db "Domingo", 0
+strLunes db "Lunes", 0
+strMartes db "Martes", 0
+strMiercoles db "Miercoles", 0
+strJueves db "Jueves", 0
+strViernes db "Viernes", 0
+strSabado db "Sabado", 0
 
 ;;; strings meses
 strEnero:	db "Enero ",0
@@ -219,14 +229,13 @@ diasSeptiembre:	dd 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 diasOctubre:	dd 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 diasNoviembre:	dd 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 diasDiciembre:	dd 0,0,0,0,0,0,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,25,0,0,0,0,0,0
-	
 ;; Variables no inicializadas
 
 section .bss
 test_to_print: resb 2 ; reservo dos byte para test_to_print
 
 exec_mode:  resb 4 ; Tipo de ejecucion
-exec_argv:  resb 50 ; Argumentos de ejecucion
+exec_argv:  resb 120 ; Argumentos de ejecucion
 is_cot:     resb 1 ; Esta ubucado en colombia
 
 numero:	resb 50
@@ -242,9 +251,9 @@ current_day resb 4
 
 current_month_days resb 4
 
-year 4
-month 4
-day 4
+year resb 4
+month resb 4
+day resb 4
 
 ;;; variables para la pascua
 
@@ -259,27 +268,24 @@ _start:
     ; Timestamp es el timepo actual 
     getOpt
 
-    mov edx, exec_argv
-    call stringToInt
+    ;mov eax, 4
+    ;mov ebx, 1
+    ;mov ecx, [exec_argv]
+    ;mov edx, 8
 
-    ;mov edi, numero
-    ;call intToString
-    ;call write_digit
-    ;sys_exit
-
-    mov edx, exec_argv
-    call stringToInt
-
-    
+    ;sys_call
 
     cmp byte[exec_mode], 0
     je .isCurrentYear
 
     cmp byte[exec_mode], 1
     je .isParamYear
-    
-    xor edx, edx
-    mov eax, [exec_argv]
+
+    mov edx, [exec_argv]
+    call stringToInt
+
+    mov edx, 0
+
     mov ecx, 10000
 
     div ecx
@@ -287,40 +293,278 @@ _start:
     mov [year], eax
 
     mov eax, edx
-    xor edx, edx
+    mov edx, 0
 
     mov ecx, 100
-
     div ecx
 
     mov [month], eax
     mov [day], edx
 
-    cmp [month], 1
-    jne .feb
+    ;cmp [month], 1
+    ;jne .feb
 
-    mov ecx, [diasEnero + edx * 4]
+    ;mov ecx, [diasEnero + edx * 4]
 
-    cmp ecx, 0
+    ;cmp ecx, 0
     
-
 
 .elDiaEsHabil
     mov ebx, diaEl
     call print
 
-    mov eax, [day]
-    mov edi
-    
+    mov ebx, [month]
+    mov ecx, [day]
+    mov eax, [year]
 
+    call dayWeek
+    
+    cmp eax, 0
+    jne .lunes
+
+    mov ebx, strDomingo
+    call print
+
+    jmp .endDia 
+.lunes 
+     mov ebx, [month]
+    mov ecx, [day]
+    mov eax, [year]
+
+    call dayWeek
+    
+    cmp eax, 1
+    jne .martes
+
+    mov ebx, strLunes
+    call print
+    
+    jmp .endDia
+
+.martes
+    mov ebx, [month]
+    mov ecx, [day]
+    mov eax, [year]
+
+    call dayWeek
+    
+    cmp eax, 2
+    jne .miercoles
+
+    mov ebx, strMartes
+    call print
+
+    jmp .endDia
+    
+.miercoles
+    mov ebx, [month]
+    mov ecx, [day]
+    mov eax, [year]
+
+    call dayWeek
+    
+    cmp eax, 3
+    jne .jueves
+
+    mov ebx, strMiercoles
+    call print
+
+    jmp .endDia
+    
+.jueves
+mov ebx, [month]
+    mov ecx, [day]
+    mov eax, [year]
+
+    call dayWeek
+    
+    cmp eax, 4
+    jne .viernes
+
+    mov ebx, strJueves
+    call print
+
+    jmp .endDia
+    
+.viernes
+mov ebx, [month]
+    mov ecx, [day]
+    mov eax, [year]
+
+    call dayWeek
+    
+    cmp eax, 5
+    jne .sabado
+
+    mov ebx, strViernes
+    call print
+
+    jmp .endDia
+    
+.sabado
+mov ebx, [month]
+    mov ecx, [day]
+    mov eax, [year]
+
+    call dayWeek
+
+    mov ebx, strSabado
+    call print
+
+    jmp .endDia
+    
+.endDia:
+    mov eax, WS
+    call printChar
+
+    mov eax, [day]
+    mov edi, numero
+    call intToString
+    call write_digit
+   
+    mov ebx, diaDe
+    call print
+
+    mov eax, [month]
+
+    cmp eax, 1
+    jne .habilFeb
+
+    mov ebx, strEnero
+    call print
+    jmp .endHabil
+
+.habilFeb:
+    mov eax, [month]
+
+    cmp eax, 2
+    jne .habilMar
+
+    mov ebx, strFebrero
+    call print
+    jmp .endHabil
+
+.habilMar:
+ mov eax, [month]
+
+    cmp eax, 3
+    jne .habilAbr
+
+    mov ebx, strMarzo
+    call print
+    jmp .endHabil
+
+.habilAbr:
+ mov eax, [month]
+
+    cmp eax, 4
+    jne .habilMay
+
+    mov ebx, strAbril
+    call print
+    jmp .endHabil
+
+.habilMay:
+ mov eax, [month]
+
+    cmp eax, 5
+    jne .habilJun
+
+    mov ebx, strMayo
+    call print
+    jmp .endHabil
+
+.habilJun:
+ mov eax, [month]
+
+    cmp eax, 6
+    jne .habilJul
+
+    mov ebx, strJunio
+    call print
+    jmp .endHabil
+
+.habilJul:
+ mov eax, [month]
+
+    cmp eax, 7
+    jne .habilAgo
+
+    mov ebx, strJulio
+    call print
+    jmp .endHabil
+
+.habilAgo:
+ mov eax, [month]
+
+    cmp eax, 8
+    jne .habilSep
+
+    mov ebx, strAgosto
+    call print
+    jmp .endHabil
+
+.habilSep:
+ mov eax, [month]
+
+    cmp eax, 9
+    jne .habilOct
+
+    mov ebx, strSeptiembre
+    call print
+    jmp .endHabil
+
+.habilOct:
+ mov eax, [month]
+
+    cmp eax, 10
+    jne .habilNov
+
+    mov ebx, strOctubre
+    call print
+    jmp .endHabil
+
+.habilNov:
+ mov eax, [month]
+
+    cmp eax, 11
+    jne .habilDic
+
+    mov ebx, strNoviembre
+    call print
+    jmp .endHabil
+
+.habilDic:
+ mov eax, [month]
+
+    mov ebx, strDiciembre
+    call print
+
+.endHabil:
+
+    mov ebx, diaDe
+    call print
+
+    mov eax, [year]
+    mov edi, numero
+    call intToString
+    call write_digit
+
+    mov ebx, diaHabilStr
+    call print
+
+    mov eax, LF
+    call printChar 
+
+    sys_exit 0
 
 .isParamYear:
-    mov edx, exec_argv
+    mov edx, [exec_argv]
     call stringToInt
 
     call festivos
 
-    mov edx, exec_argv
+    mov edx, [exec_argv]
     call stringToInt
 
     call printYear
