@@ -309,7 +309,7 @@ _start:
     ;cmp ecx, 0
     
 
-.elDiaEsHabil
+.elDiaEsHabil:
     mov ebx, diaEl
     call print
 
@@ -326,7 +326,7 @@ _start:
     call print
 
     jmp .endDia 
-.lunes 
+.lunes: 
      mov ebx, [month]
     mov ecx, [day]
     mov eax, [year]
@@ -341,7 +341,7 @@ _start:
     
     jmp .endDia
 
-.martes
+.martes:
     mov ebx, [month]
     mov ecx, [day]
     mov eax, [year]
@@ -356,7 +356,7 @@ _start:
 
     jmp .endDia
     
-.miercoles
+.miercoles:
     mov ebx, [month]
     mov ecx, [day]
     mov eax, [year]
@@ -371,7 +371,7 @@ _start:
 
     jmp .endDia
     
-.jueves
+.jueves:
 mov ebx, [month]
     mov ecx, [day]
     mov eax, [year]
@@ -386,7 +386,7 @@ mov ebx, [month]
 
     jmp .endDia
     
-.viernes
+.viernes:
 mov ebx, [month]
     mov ecx, [day]
     mov eax, [year]
@@ -401,7 +401,7 @@ mov ebx, [month]
 
     jmp .endDia
     
-.sabado
+.sabado:
 mov ebx, [month]
     mov ecx, [day]
     mov eax, [year]
