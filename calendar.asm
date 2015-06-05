@@ -107,6 +107,12 @@ num:	dq 1
 ;;; DEBUG ONLY
 str_int:	db "int=%d",10,0
 
+diaHabilStr db "fue dia habil",0
+diaFestivo db "fue festivo",0
+diaEl db "El dia ",0
+diaDe db " de ",0
+
+
 ;;; strings meses
 strEnero:	db "Enero ",0
 strFebrero:	db "Febrero ",0
@@ -236,6 +242,10 @@ current_day resb 4
 
 current_month_days resb 4
 
+year 4
+month 4
+day 4
+
 ;;; variables para la pascua
 
 ;; Codigo (Logica del programa)
@@ -260,13 +270,48 @@ _start:
     mov edx, exec_argv
     call stringToInt
 
-
+    
 
     cmp byte[exec_mode], 0
     je .isCurrentYear
 
     cmp byte[exec_mode], 1
     je .isParamYear
+    
+    xor edx, edx
+    mov eax, [exec_argv]
+    mov ecx, 10000
+
+    div ecx
+    
+    mov [year], eax
+
+    mov eax, edx
+    xor edx, edx
+
+    mov ecx, 100
+
+    div ecx
+
+    mov [month], eax
+    mov [day], edx
+
+    cmp [month], 1
+    jne .feb
+
+    mov ecx, [diasEnero + edx * 4]
+
+    cmp ecx, 0
+    
+
+
+.elDiaEsHabil
+    mov ebx, diaEl
+    call print
+
+    mov eax, [day]
+    mov edi
+    
 
 
 .isParamYear:
