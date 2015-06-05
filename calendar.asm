@@ -229,6 +229,12 @@ diasSeptiembre:	dd 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 diasOctubre:	dd 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 diasNoviembre:	dd 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 diasDiciembre:	dd 0,0,0,0,0,0,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,25,0,0,0,0,0,0
+
+junk:	db "aa"
+	
+semana_e:	dd 0,3,2,5,0,3,5,1,4,6,2,4
+semana_f:	dd 0,5,3,1
+	
 ;; Variables no inicializadas
 
 section .bss
@@ -815,62 +821,53 @@ printChar:
 ;;; ecx = day (int, ex:20)
 ;;; return: eax = dayOfWeek (int, domingo = 0...sabado = 6)
 dayWeek:
-	push ecx		;guardar el dia para la suma
-	
-	push eax		;guardar registros para llamar una funcion
+	push ecx
+	mov ecx, 3
+	cmp ebx,ecx
+	jge .normal
+
+	dec eax
+.normal:
+	dec ebx
+	movzx ebx, word[semana_e+ebx*4]
 	push ebx
-	
-	call isYearLeap		;obtiene 0 si no es biciesto, 1 si si
+
+	push eax
 	mov ecx, eax
-
-	pop ebx			;vuelve a obtener los datos antes de la funcion
-	pop eax
-
-	push ebx
-	;; get century number
-	xor edx, edx
-        CDQ 			;sign-extend eax into edx 
-	mov ebx, const100 
-	div ebx
-	pop ebx
-	;; eax = century
-	;; edx = last 2 digits
-	push edx
 	
-	call getCentury		;obtener el codigo del siglo
-	push eax		;guarda el codigo para la suma
-
-	push ebx
-	;; ultimos digitos / 4
-	mov eax, edx
-	xor edx, edx
-	CDQ
-	mov ebx, const4
-	div ebx
-	pop ebx
-	push eax		;guarda el resultado para la suma
-
-	;; codigo del mes
-	mov eax, ebx		;mes
-	mov ebx, ecx 		;si es biciesto
-	call getMonth
-	
-	;; suma de los numeros
-	pop ebx
-	add eax, ebx 		;mes + digitos anyos/4
-	pop ebx
-	add eax, ebx		;total + digitos anyos
-	pop ebx
-	add eax, ebx		;total + siglo
-	pop ebx
-	add eax, ebx		;total + dia
-	
-	;; mod 7
+	mov ebx,4
 	xor edx,edx
-	CDQ
-	mov ebx, const7
 	div ebx
-	mov eax, edx
+
+	add ecx, eax
+
+	mov ebx,100
+	xor edx,edx
+	pop eax
+	push eax
+	div ebx
+
+	sub ecx,eax
+
+	mov ebx,400
+	pop eax
+	xor edx,edx
+	div ebx
+
+	add ecx, eax
+
+	pop eax
+	add ecx, eax
+	pop eax
+	add ecx, eax
+	
+	mov eax,ecx
+	mov ebx,7
+	xor edx,edx
+	div ebx
+
+	mov eax,edx
+	
 	
 	ret
 
