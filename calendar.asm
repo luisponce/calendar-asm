@@ -1928,10 +1928,123 @@ festivos:
 	mov ebx, 2
 	cmp edx, ebx
 	jne .again
+
+
+	
+;;; festivos que dependen de pascua
+	movzx ecx, word[p]		;ecx = dia pascua
+	movzx edx, word[n]		;edx = mes pascua
+	xor eax, eax		;cont = 0
+.repeat:
+	mov ebx, 9
+	cmp eax, ebx
+	jg .endRepeat		;while cont<9
+
+	;; Ascensión del Señor (Sexto domingo después de Pascua)
+	mov ebx, 6
+	cmp eax, ebx
+	je .ponerFestivo
+
+	;; Corpus Christi (Octavo domingo después de Pascua)
+	mov ebx, 8
+	cmp eax, ebx
+	je .ponerFestivo
+
+	;; Sagrado Corazón de Jesús (Noveno domingo después de Pascua)
+	mov ebx, 9
+	cmp eax, ebx
+	je .ponerFestivo
+	
+.endIfsEaster:
+
+	mov ebx, 7
+	add ecx,ebx		;dias+=7
+
+	mov ebx,3
+	cmp edx,ebx
+	jne .check4		;if mes == 3
+
+	mov ebx, 31
+	cmp ecx, ebx
+	jle .check4		;if dias > 31
+
+	inc edx			;mes++
+	sub ecx, ebx		;dias-=31
+
+.check4:
+	mov ebx,4
+	cmp edx,ebx
+	jne .check5		;if mes == 4
+
+	mov ebx, 30
+	cmp ecx, ebx
+	jle .check5		;if dias > 30
+
+	inc edx			;mes++
+	sub ecx, ebx		;dias-=30
+
+.check5:
+	mov ebx,5
+	cmp edx,ebx
+	jne .check6		;if mes == 5
+
+	mov ebx, 31
+	cmp ecx, ebx
+	jle .check6		;if dias > 31
+
+	inc edx			;mes++
+	sub ecx, ebx		;dias-=31
+
+.check6:
+	mov ebx,6
+	cmp edx,ebx
+	jne .checkEnd		;if mes == 6
+
+	mov ebx, 30
+	cmp ecx, ebx
+	jle .checkEnd		;if dias > 30
+
+	inc edx			;mes++
+	sub ecx, ebx		;dias-=30
+
+.checkEnd:
+	mov ebx, 31
+	cmp ecx, ebx
+	jle .endChecks		;if dias > 31
+
+	inc edx			;mes++
+	sub ecx, ebx		;dias-=31
+
+.endChecks:
+	inc eax
+	jmp .repeat
+	
+.endRepeat:
 	
 	pop eax
 	ret
 
+.ponerFestivo:
+	pop esi
+	push esi
+	pusha
+	mov eax, edx
+	push edx
+	push ecx
+	push esi
+	call obtenerArrMes
+	mov edx, eax
+	pop eax
+	pop ecx
+	pop ebx
+
+	call aproximarFestivos
+	
+	popa
+	jmp .endIfsEaster
+
+
+	
 ;;; eax= year, ebx = mes, ecx = dia, edx =  ptr a arregloFestivosMes
 aproximarFestivos:
 	push ecx
@@ -2133,3 +2246,102 @@ getArrFestivo:
 	
 .end:
 	ret
+
+
+;;; eax = mes
+;;; return eax = dias<Mes> 
+obtenerArrMes:
+	mov ebx, 1
+	cmp eax, ebx
+	jne .febrero
+
+	mov eax, diasEnero
+	jmp .return
+	
+.febrero:
+	mov ebx, 2
+	cmp eax, ebx
+	jne .marzo
+
+	mov eax, diasFebrero
+	jmp .return
+	
+.marzo:
+	mov ebx, 3
+	cmp eax, ebx
+	jne .abril
+
+	mov eax, diasMarzo
+	jmp .return
+	
+.abril:
+	mov ebx, 4
+	cmp eax, ebx
+	jne .mayo
+
+	mov eax, diasAbril
+	jmp .return
+
+.mayo:
+	mov ebx, 5
+	cmp eax, ebx
+	jne .junio
+
+	mov eax, diasMayo
+	jmp .return
+
+.junio:
+	mov ebx, 6
+	cmp eax, ebx
+	jne .julio
+
+	mov eax, diasJunio
+	jmp .return
+
+.julio:
+	mov ebx, 7
+	cmp eax, ebx
+	jne .agosto
+
+	mov eax, diasJulio
+	jmp .return
+
+.agosto:
+	mov ebx, 8
+	cmp eax, ebx
+	jne .septiembre
+
+	mov eax, diasAgosto
+	jmp .return
+
+.septiembre:
+	mov ebx, 9
+	cmp eax, ebx
+	jne .octubre
+
+	mov eax, diasSeptiembre
+	jmp .return
+
+.octubre:
+	mov ebx, 10
+	cmp eax, ebx
+	jne .noviembre
+
+	mov eax, diasOctubre
+	jmp .return
+
+.noviembre:
+	mov ebx, 11
+	cmp eax, ebx
+	jne .diciembre
+
+	mov eax, diasNoviembre
+	jmp .return
+
+.diciembre:
+	mov eax, diasDiciembre
+
+.return:
+	ret
+
+
