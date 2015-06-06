@@ -114,6 +114,7 @@ diaHabilStr db " es dia habil",0
 diaFestivo db " es festivo",0
 diaEl db "El dia ",0
 diaDe db " de ",0
+diaTrasladado db " trasladado del ", 0
 
 strDomingo db "Domingo", 0
 strLunes db "Lunes", 0
@@ -307,6 +308,9 @@ _start:
     mov [month], eax
     mov [day], edx
 
+	mov eax, [year]
+	call festivos
+
     ;cmp [month], 1
     ;jne .feb
 
@@ -315,7 +319,7 @@ _start:
     ;cmp ecx, 0
     
 
-.elDiaEsHabil:
+
     mov ebx, diaEl
     call print
 
@@ -555,7 +559,24 @@ mov ebx, [month]
     mov edi, numero
     call intToString
     call write_digit
+	
+		
+.festEne:
+    mov eax, [month]
+    mov ebx, [day]
 
+call getArrFestivo
+
+mov ebx, 0
+cmp eax, ebx
+    jne .esDiaFestivo
+
+    jmp .esDiaHabil
+;***
+
+
+
+.esDiaHabil:
     mov ebx, diaHabilStr
     call print
 
@@ -563,6 +584,519 @@ mov ebx, [month]
     call printChar 
 
     sys_exit 0
+
+.esDiaFestivo:
+; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ 	
+
+mov ebx, diaFestivo
+call print
+
+		
+.festivoEne:
+    mov eax, [month]
+	cmp eax, 1
+	jne .festivoFeb
+
+    mov ebx, [day]
+dec ebx
+    mov eax, [diasEnero+ebx*4]  ; compara si el valor guardado en el festivo es ese mismo dia
+inc ebx
+cmp ebx, eax
+    jne .cambioFestivoEne
+
+    jmp .endFestivo
+
+.festivoFeb:
+       mov eax, [month]
+	cmp eax, 2
+	jne .festivoMar
+
+    mov ebx, [day]
+dec ebx
+    mov eax, [diasFebrero+ebx*4]  ; compara si el valor guardado en el festivo es ese mismo dia
+inc ebx
+cmp ebx, eax
+    jne .cambioFestivoFeb
+
+    jmp .endFestivo
+
+
+.festivoMar:
+   mov eax, [month]
+	cmp eax, 3
+	jne .festivoMar
+
+    mov ebx, [day]
+dec ebx
+    mov eax, [diasMarzo+ebx*4]  ; compara si el valor guardado en el festivo es ese mismo dia
+inc ebx
+cmp ebx, eax
+    jne .cambioFestivoMar
+
+    jmp .endFestivo
+
+.festivoAbr:
+    mov eax, [month]
+	cmp eax, 4
+	jne .festivoMay
+
+    mov ebx, [day]
+dec ebx
+    mov eax, [diasAbril+ebx*4]  ; compara si el valor guardado en el festivo es ese mismo dia
+inc ebx
+cmp ebx, eax
+    jne .cambioFestivoAbr
+
+    jmp .endFestivo
+
+.festivoMay:
+    mov eax, [month]
+	cmp eax, 5
+	jne .festivoJun
+
+    mov ebx, [day]
+dec ebx
+    mov eax, [diasMayo+ebx*4]  ; compara si el valor guardado en el festivo es ese mismo dia
+inc ebx
+cmp ebx, eax
+    jne .cambioFestivoMay
+
+    jmp .endFestivo
+
+.festivoJun:
+ mov eax, [month]
+
+    cmp eax, 6
+    jne .festivoJul
+
+    mov ebx, [day]
+dec ebx
+    mov eax, [diasJunio+ebx*4]  ; compara si el valor guardado en el festivo es ese mismo dia
+inc ebx
+cmp ebx, eax
+    jne .cambioFestivoJun
+
+    jmp .endFestivo
+
+.festivoJul:
+ mov eax, [month]
+
+    cmp eax, 7
+    jne .festivoAgo
+
+    mov ebx, [day]
+dec ebx
+    mov eax, [diasJulio+ebx*4]  ; compara si el valor guardado en el festivo es ese mismo dia
+inc ebx
+cmp ebx, eax
+    jne .cambioFestivoJul
+
+    jmp .endFestivo
+
+.festivoAgo:
+ mov eax, [month]
+
+    cmp eax, 8
+    jne .festivoSep
+
+    mov ebx, [day]
+dec ebx
+    mov eax, [diasAgosto+ebx*4]  ; compara si el valor guardado en el festivo es ese mismo dia
+inc ebx
+cmp ebx, eax
+    jne .cambioFestivoAgo
+
+    jmp .endFestivo
+
+.festivoSep:
+ mov eax, [month]
+
+    cmp eax, 9
+    jne .festivoOct
+
+    mov ebx, [day]
+dec ebx
+    mov eax, [diasSeptiembre+ebx*4]  ; compara si el valor guardado en el festivo es ese mismo dia
+inc ebx
+cmp ebx, eax
+    jne .cambioFestivoSep
+
+    jmp .endFestivo
+
+.festivoOct:
+ mov eax, [month]
+
+    cmp eax, 10
+    jne .festivoNov
+
+    mov ebx, [day]
+dec ebx
+    mov eax, [diasOctubre+ebx*4]  ; compara si el valor guardado en el festivo es ese mismo dia
+inc ebx
+cmp ebx, eax
+    jne .cambioFestivoOct
+
+    jmp .endFestivo
+
+.festivoNov:
+ mov eax, [month]
+
+    cmp eax, 11
+    jne .festivoDic
+
+    mov ebx, [day]
+dec ebx
+    mov eax, [diasNoviembre+ebx*4]  ; compara si el valor guardado en el festivo es ese mismo dia
+inc ebx
+cmp ebx, eax
+    jne .cambioFestivoNov
+
+    jmp .endFestivo
+
+.festivoDic:
+ mov eax, [month]
+
+    mov ebx, [day]
+dec ebx
+    mov eax, [diasDiciembre+ebx*4]  ; compara si el valor guardado en el festivo es ese mismo dia
+inc ebx
+cmp ebx, eax
+    jne .cambioFestivoDic
+
+    jmp .endFestivo
+
+
+
+.cambioFestivoEne:
+mov ebx, diaTrasladado
+call print
+
+mov eax, [day]
+dec eax
+mov eax, [diasEnero+eax*4]
+call intToString
+call write_digit
+
+mov ebx, diaDe
+call print
+
+mov ebx, [day]
+dec eax
+mov eax, [diasEnero+ebx*4]
+inc ebx
+cmp eax, ebx
+jl .cambioMesEne	;Si es mayor es que cambio de mes
+
+mov ebx, strEnero
+jmp .endFestivo
+
+.cambioMesEne:
+mov ebx, strDiciembre
+jmp .endFestivo
+
+.cambioFestivoFeb:
+mov ebx, diaTrasladado
+call print
+
+mov eax, [day]
+dec eax
+mov eax, [diasFebrero+eax*4]
+call intToString
+call write_digit
+
+mov ebx, diaDe
+call print
+
+mov ebx, [day]
+dec ebx
+mov eax, [diasFebrero+ebx*4]
+inc ebx
+cmp eax, ebx
+jl .cambioMesFeb	;Si es mayor es que cambio de mes
+
+mov ebx, strEnero
+jmp .endFestivo
+
+.cambioMesFeb:
+mov ebx, strEnero
+jmp .endFestivo
+
+.cambioFestivoMar:
+mov ebx, diaTrasladado
+call print
+
+mov eax, [day]
+dec eax
+mov eax, [diasMarzo+eax*4]
+call intToString
+call write_digit
+
+mov ebx, diaDe
+call print
+
+mov ebx, [day]
+dec ebx
+mov eax, [diasMarzo+ebx*4]
+inc ebx
+cmp eax, ebx
+jl .cambioMesMar	;Si es mayor es que cambio de mes
+
+mov ebx, strMarzo
+jmp .endFestivo
+
+.cambioMesMar:
+mov ebx, strFebrero
+jmp .endFestivo
+
+.cambioFestivoAbr:
+mov ebx, diaTrasladado
+call print
+
+mov eax, [day]
+dec eax
+mov eax, [diasAbril+eax*4]
+call intToString
+call write_digit
+
+mov ebx, diaDe
+call print
+
+mov ebx, [day]
+dec ebx
+mov eax, [diasAbril+ebx*4]
+inc ebx
+cmp eax, ebx
+jl .cambioMesAbr	;Si es mayor es que cambio de mes
+
+mov ebx, strAbril
+jmp .endFestivo
+
+.cambioMesAbr:
+mov ebx, strMarzo
+jmp .endFestivo
+
+.cambioFestivoMay:
+mov ebx, diaTrasladado
+call print
+
+mov eax, [day]
+dec eax
+mov eax, [diasMayo+eax*4]
+
+call intToString
+call write_digit
+
+mov ebx, diaDe
+call print
+
+mov ebx, [day]
+dec ebx
+mov eax, [diasMayo+ebx*4]
+inc ebx
+cmp eax, ebx
+jl .cambioMesMay	;Si es mayor es que cambio de mes
+
+mov ebx, strMayo
+jmp .endFestivo
+
+.cambioMesMay:
+mov ebx, strAbril
+jmp .endFestivo
+
+
+.cambioFestivoJun:
+mov ebx, diaTrasladado
+call print
+
+mov eax, [day]
+dec eax
+mov eax, [diasJunio+eax*4]
+call intToString
+call write_digit
+
+mov ebx, diaDe
+call print
+
+mov ebx, [day]
+dec ebx
+mov eax, [diasJunio+ebx*4]
+inc ebx
+cmp eax, ebx
+jl .cambioMesJun	;Si es mayor es que cambio de mes
+
+mov ebx, strJunio
+jmp .endFestivo
+
+.cambioMesJun:
+mov ebx, strMayo
+jmp .endFestivo
+
+
+.cambioFestivoJul:
+mov ebx, diaTrasladado
+call print
+
+mov eax, [day]
+dec eax
+mov eax, [diasJulio+eax*4]
+call intToString
+call write_digit
+
+mov ebx, diaDe
+call print
+
+mov ebx, [day]
+dec ebx
+mov eax, [diasJulio+ebx*4]
+inc ebx
+cmp eax, ebx
+jl .cambioMesJul	;Si es mayor es que cambio de mes
+
+mov ebx, strJulio
+jmp .endFestivo
+
+.cambioMesJul:
+mov ebx, strJunio
+jmp .endFestivo
+
+.cambioFestivoAgo:
+mov ebx, diaTrasladado
+call print
+
+mov eax, [day]
+dec eax
+mov eax, [diasAgosto+eax*4]
+call intToString
+call write_digit
+
+mov ebx, diaDe
+call print
+
+mov ebx, [day]
+dec ebx
+mov eax, [diasAgosto+ebx*4]
+inc ebx
+cmp eax, ebx
+jl .cambioMesAgo	;Si es mayor es que cambio de mes
+
+mov ebx, strAgosto
+jmp .endFestivo
+
+.cambioMesAgo:
+mov ebx, strJulio
+jmp .endFestivo
+
+.cambioFestivoSep:
+mov ebx, diaTrasladado
+call print
+
+mov eax, [day]
+dec eax
+mov eax, [diasSeptiembre+eax*4]
+call intToString
+call write_digit
+
+mov ebx, diaDe
+call print
+
+mov ebx, [day]
+dec ebx
+mov eax, [diasSeptiembre+ebx*4]
+inc ebx
+cmp eax, ebx
+jl .cambioMesSep	;Si es mayor es que cambio de mes
+
+mov ebx, strSeptiembre
+jmp .endFestivo
+
+.cambioMesSep:
+mov ebx, strAgosto
+jmp .endFestivo
+
+.cambioFestivoOct:
+mov ebx, diaTrasladado
+call print
+
+mov eax, [day]
+dec eax
+mov eax, [diasOctubre+eax*4]
+call intToString
+call write_digit
+
+mov ebx, diaDe
+call print
+
+mov ebx, [day]
+dec ebx
+mov eax, [diasOctubre+ebx*4]
+inc ebx
+cmp eax, ebx
+jl .cambioMesOct	;Si es mayor es que cambio de mes
+
+mov ebx, strOctubre
+jmp .endFestivo
+
+.cambioMesOct:
+mov ebx, strSeptiembre
+jmp .endFestivo
+
+.cambioFestivoNov:
+mov ebx, diaTrasladado
+call print
+
+mov eax, [day]
+dec eax
+mov eax, [diasNoviembre+eax*4]
+call intToString
+call write_digit
+
+mov ebx, diaDe
+call print
+
+mov ebx, [day]
+dec ebx
+mov eax, [diasNoviembre+ebx*4]
+inc ebx
+cmp eax, ebx
+jl .cambioMesNov	;Si es mayor es que cambio de mes
+
+mov ebx, strNoviembre
+jmp .endFestivo
+
+.cambioMesNov:
+mov ebx, strOctubre
+jmp .endFestivo
+
+.cambioFestivoDic:
+mov ebx, diaTrasladado
+call print
+
+mov eax, [day]
+dec eax
+mov eax, [diasDiciembre+eax*4]
+call intToString
+call write_digit
+
+mov ebx, diaDe
+call print
+
+mov ebx, [day]
+dec ebx
+mov eax, [diasDiciembre+ebx*4]
+inc ebx
+cmp eax, ebx
+jl .cambioMesDic	;Si es mayor es que cambio de mes
+
+mov ebx, strDiciembre
+jmp .endFestivo
+
+.cambioMesDic:
+mov ebx, strNoviembre
+jmp .endFestivo
+
+.endFestivo:
+sys_exit 0
+
 
 .isParamYear:
     mov edx, [exec_argv]
