@@ -1,4 +1,4 @@
-;;; simple calendar with Colombian holydays
+;; simple calendar with Colombian holydays
 
 global _start			
 	
@@ -149,6 +149,27 @@ test_string_2 db "Hola Munda", 0
 year_opt db "-y", 0
 date_opt db "-d", 0
 
+;;; strings nombres festivos
+nombreAnno db "(Año Nuevo)",0
+nombreJueves db "(Jueves Santo)",0
+nombreViernes db "(Viernes Santo)",0
+nombreTrabajo db "(Dia del Trabajo)",0
+nombreIndependencia db "(Independencia Nacional)",0
+nombreBatalla db "(Batalla de Boyaca)",0
+nombreInmaculada db "(Inmaculada Concepcion)",0
+nombreNavidad db "(Navidad)",0
+nombreEpifania db "(Epifania del Señor)",0
+nombreSanJose db "(Dia de San Jose)",0
+nombreAscension db "(Ascension del señor)",0
+nombreCorpus db "(Corpus Christi)",0
+nombreSagrado db "(Sagrado Corazon de Jesus)",0
+nombreSanPedro db "(San Pedro y San Pablo)",0
+nombreAsuncion db "(Asuncion de la Virgen)",0
+nombreRaza db "(Dia de la Raza)",0
+nombreSantos db "(Todos los Santos)",0
+nombreCartagena db "(Independencia de Cartagena)",0
+nombreDomingo db "(domingo)",0
+	
 ;; Caracteres especiales ASCII
 ;
 ; Notacion: 
@@ -235,6 +256,26 @@ junk:	db "aa"
 	
 semana_e:	dd 0,3,2,5,0,3,5,1,4,6,2,4
 semana_f:	dd 0,5,3,1
+
+dfestivoJueves:	dd 0
+mfestivoJueves:	dd 0
+dfestivoViernes:	dd 0
+mfestivoViernes:	dd 0
+dfestivoEpifania:	dd 6
+dfestivoSanJose:	dd 19
+dfestivoAscension:	dd 0
+mfestivoAscension:	dd 0
+dfestivoCorpus:	dd 0
+mfestivoCorpus:	dd 0
+dfestivoSagrado:	dd 0
+mfestivoSagrado:	dd 0
+dfestivoSanPedro:	dd 29
+mfestivoSanPedro:	dd 6
+dfestivoAsuncion:	dd 23
+mfestivoAsuncion:	dd 8
+dfestivoRaza:	dd 12
+dfestivoSantos:	dd 1
+dfestivoCartagena:	dd 11
 	
 ;; Variables no inicializadas
 
@@ -481,6 +522,19 @@ cmp eax, ebx
 mov ebx, diaFestivo
 call print
 
+	pusha
+
+	mov eax,WS
+	call printChar
+	
+	mov eax,[month]
+	mov ebx, [day]
+	call getNombreFestivo
+	mov ebx, eax
+	call print
+	
+	popa
+	
 ;;; ----------------------------------------------------------
 
 	mov eax, [month]
@@ -1969,6 +2023,7 @@ festivos:
 	mov ecx ,6
 	mov edx, diasEnero
 	call aproximarFestivos
+	mov [dfestivoEpifania],eax
 
 ;;; 19 de marzo - Día de San José
 	pop eax
@@ -1977,7 +2032,8 @@ festivos:
 	mov ecx, 19
 	mov edx, diasMarzo
 	call aproximarFestivos
-
+	mov [dfestivoSanJose],eax
+	
 ;;; 29 de Junio San Pedro y San Pablo
 	pop eax
 	push eax
@@ -1985,6 +2041,8 @@ festivos:
 	mov ecx, 29
 	mov edx, diasJunio
 	call aproximarFestivos
+	mov [dfestivoSanPedro], eax
+	mov [mfestivoSanPedro], ebx
 
 ;;; 23 de agosto - Asunción de la Virgen
 	pop eax
@@ -1993,6 +2051,8 @@ festivos:
 	mov ecx, 23
 	mov edx, diasAgosto
 	call aproximarFestivos
+	mov [dfestivoAsuncion],eax
+	mov [mfestivoAsuncion],ebx
 
 ;;; 12 de octubre - Día de la Raza
 	pop eax
@@ -2001,6 +2061,7 @@ festivos:
 	mov ecx, 12
 	mov edx, diasOctubre
 	call aproximarFestivos
+	mov [dfestivoRaza],eax
 
 ;;; 1 de noviembre - Todos los Santos
 	pop eax
@@ -2009,7 +2070,8 @@ festivos:
 	mov ecx, 1
 	mov edx, diasNoviembre
 	call aproximarFestivos
-
+	mov [dfestivoSantos],eax
+	
 ;;; 11 de noviembre - Independencia de Cartagena.
 	pop eax
 	push eax
@@ -2017,7 +2079,8 @@ festivos:
 	mov ecx, 11
 	mov edx, diasNoviembre
 	call aproximarFestivos
-
+	mov [dfestivoCartagena],eax
+	
 ;;; pascua
 	pop eax
 	push eax
@@ -2150,9 +2213,12 @@ festivos:
 	jg .noProb
 
 	mov ebx, 31
-	add eax, ebx		;dia = 31 + dia
+	add eax, ebx	;dia = 31 + dia
+	mov esi,eax
 	dec eax
-	mov [diasMarzo+eax*4],eax
+	mov [diasMarzo+eax*4],esi
+	mov ebx,3
+	push ebx
 	jmp .endEaster
 	
 .noProb:
@@ -2161,15 +2227,51 @@ festivos:
 	cmp ebx, ecx
 	jne .easterMarzo
 
+	mov esi,eax
 	dec eax
-	mov [diasAbril+eax*4],eax
+	mov [diasAbril+eax*4],esi
+	mov ebx,3
+	push ebx
 	jmp .endEaster
 
 .easterMarzo:
+	mov esi, eax
 	dec eax
-	mov [diasMarzo+eax*4],eax
-
+	mov [diasMarzo+eax*4],esi
+	mov ebx,3
+	push ebx
+	
 .endEaster:
+	mov ebx,0
+	cmp edx,ebx
+	je .storeViernes
+
+	mov ebx,1
+	cmp edx,ebx
+	je .storeJueves
+
+	jmp .returnStore
+
+.storeJueves:
+	pop ebx
+	inc ebx
+	inc eax
+	mov [dfestivoJueves],eax
+	mov [mfestivoJueves],ebx
+	dec eax
+	jmp .returnStore
+
+.storeViernes:
+	pop ebx
+	inc ebx
+	inc eax
+	mov [dfestivoViernes],eax
+	mov [mfestivoViernes],ebx
+	dec eax
+	jmp .returnStore
+	
+.returnStore:
+	
 	inc edx
 	mov ebx, 2
 	cmp edx, ebx
@@ -2274,6 +2376,7 @@ festivos:
 	pop esi
 	push esi
 	pusha
+	push eax
 	mov eax, edx
 	push edx
 	push ecx
@@ -2285,6 +2388,38 @@ festivos:
 	pop ebx
 
 	call aproximarFestivos
+	pop ecx
+	
+	mov edx, 6
+	cmp ecx,edx
+	je .storeAscension
+
+	mov edx, 8
+	cmp ecx,edx
+	je .storeCorpus
+
+	mov edx, 9
+	cmp ecx,edx
+	je .storeSagrado
+
+	jmp .returnStoreEaster
+
+.storeAscension:
+	mov [dfestivoAscension],eax
+	mov [mfestivoAscension],ebx
+	jmp .returnStoreEaster
+
+.storeCorpus:
+	mov [dfestivoCorpus],eax
+	mov [mfestivoCorpus],ebx
+	jmp .returnStoreEaster
+
+.storeSagrado:
+	mov [dfestivoSagrado],eax
+	mov [mfestivoSagrado],ebx
+	jmp .returnStoreEaster
+	
+.returnStoreEaster:
 	
 	popa
 	jmp .endIfsEaster
@@ -2292,6 +2427,7 @@ festivos:
 
 	
 ;;; eax= year, ebx = mes, ecx = dia, edx =  ptr a arregloFestivosMes
+;;; return eax = dia, ebx = mes
 aproximarFestivos:
 	push ecx
 	mov esi, ebx
@@ -2333,46 +2469,52 @@ aproximarFestivos:
 	dec eax
 	
 	mov [edi+eax*4], ebx
+	inc eax
+	mov ebx,ecx
 .endFinal:
 	ret
 
 .mayo:
-	mov ebx, 31
-	cmp eax, ebx
+	mov esi, 31
+	cmp eax, esi
 	jle .end
 
-	sub eax, ebx
+	sub eax, esi
 	mov edi, diasJunio
+	inc ecx
 	
 	jmp .end
 	
 .junio:
-	mov ebx, 30
-	cmp eax, ebx
+	mov esi, 30
+	cmp eax, esi
 	jle .end
 
-	sub eax, ebx
+	sub eax, esi
 	mov edi, diasJulio
+	inc ecx
 	
 	jmp .end
 
 .julio:
-	mov ebx, 31
-	cmp eax, ebx
+	mov esi, 31
+	cmp eax, esi
 	jle .end
 
 	sub eax, ebx
 	mov edi, diasAgosto
+	inc ecx
 	
 	jmp .end
 
 .agosto:
-	mov ebx, 31
-	cmp eax, ebx
+	mov esi, 31
+	cmp eax, esi
 	jle .end
 
 	sub eax, ebx
 	mov edi, diasSeptiembre
+	inc ecx
 	
 	jmp .end
 
@@ -2688,4 +2830,231 @@ getStrMes:
 	ret
 
 
+;;; eax = mes, ebx = dia
+;;; return eax = str_nombre
+getNombreFestivo:
+	movzx ecx, word[mfestivoJueves]
+	cmp eax, ecx
+	je .jueves
+.endJueves:
+	movzx ecx, word[mfestivoViernes]
+	cmp eax, ecx
+	je .viernes
+.endViernes:
+	movzx ecx, word[mfestivoAscension]
+	cmp eax, ecx
+	je .ascension
+.endAscension:
+	movzx ecx, word[mfestivoCorpus]
+	cmp eax, ecx
+	je .corpus
+.endCorpus:
+	movzx ecx, word[mfestivoSagrado]
+	cmp eax, ecx
+	je .sagrado
+.endSagrado:
+	movzx ecx, word[mfestivoSanPedro]
+	cmp eax, ecx
+	je .sanPedro
+.endSanPedro:
+	movzx ecx, word[mfestivoAsuncion]
+	cmp eax, ecx
+	je .asuncion
+.endAsuncion:
 	
+	mov ecx, 1
+	cmp eax,ecx
+	je .enero
+
+	mov ecx, 3
+	cmp eax,ecx
+	je .marzo
+
+	mov ecx, 5
+	cmp eax,ecx
+	je .mayo
+
+	mov ecx, 7
+	cmp eax,ecx
+	je .julio
+
+	mov ecx, 8
+	cmp eax,ecx
+	je .agosto
+
+	mov ecx, 10
+	cmp eax,ecx
+	je .octubre
+
+	mov ecx, 11
+	cmp eax,ecx
+	je .noviembre
+
+	mov ecx, 12
+	cmp eax,ecx
+	je .diciembre
+	
+.domingo:
+	mov eax, nombreDomingo
+	ret
+
+.enero:
+	mov ecx, 1
+	cmp ebx, ecx
+	je .anno
+
+	movzx ecx,word[dfestivoEpifania] 
+	cmp ebx, ecx
+	je .epifania
+	
+	jmp .domingo
+
+.marzo:
+	movzx ecx,word[dfestivoSanJose]
+	cmp ebx, ecx
+	je .sanJose
+	
+	jmp .domingo
+
+.mayo:
+	mov ecx,1
+	cmp ebx,ecx
+	je .trabajo
+	
+	jmp .domingo
+
+.julio:
+	mov ecx, 20
+	cmp ebx,ecx
+	je .independencia
+	
+	jmp .domingo
+
+.agosto:
+	mov ecx, 7
+	cmp ebx,ecx
+	je .batalla
+	
+	jmp .domingo
+
+.octubre:
+	movzx ecx, word[dfestivoRaza]
+	cmp ebx,ecx
+	je .raza
+	
+	jmp .domingo
+
+.noviembre:
+	movzx ecx, word[dfestivoSantos]
+	cmp ebx,ecx
+	je .santos
+
+	movzx ecx, word[dfestivoCartagena]
+	cmp ebx, ecx
+	je .cartagena
+	
+	jmp .domingo
+
+.diciembre:
+	mov ecx, 25
+	cmp ebx, ecx
+	je .navidad
+	
+	jmp .domingo		
+
+.jueves:
+	movzx ecx, word[dfestivoJueves]
+	cmp ebx, ecx
+	jne .endJueves
+	
+	mov eax, nombreJueves
+	ret
+	
+.viernes:
+	movzx ecx, word[dfestivoViernes]
+	cmp ebx, ecx
+	jne .endViernes
+	
+	mov eax, nombreViernes
+	ret
+
+.ascension:
+	movzx ecx, word[dfestivoAscension]
+	cmp ebx, ecx
+	jne .endAscension
+
+	mov eax, nombreAscension
+	ret
+
+.corpus:
+	movzx ecx, word[dfestivoCorpus]
+	cmp ebx, ecx
+	jne .endCorpus
+
+	mov eax, nombreCorpus
+	ret
+
+.sagrado:
+	movzx ecx, word[dfestivoSagrado]
+	cmp ebx, ecx
+	jne .endSagrado
+
+	mov eax, nombreSagrado
+	ret
+
+.sanPedro:
+	movzx ecx, word[dfestivoSanPedro]
+	cmp ebx, ecx
+	jne .endSanPedro
+
+	mov eax, nombreSanPedro
+	ret
+
+.asuncion:
+	movzx ecx, word[dfestivoAsuncion]
+	cmp ebx, ecx
+	jne .endAsuncion
+
+	mov eax, nombreAsuncion
+	ret
+	
+.anno:
+	mov eax, nombreAnno
+	ret
+
+.epifania:
+	mov eax, nombreEpifania
+	ret
+
+.sanJose:
+	mov eax, nombreSanJose
+	ret
+
+.trabajo:
+	mov eax, nombreTrabajo
+	ret
+
+.independencia:
+	mov eax, nombreIndependencia
+	ret
+
+.batalla:
+	mov eax, nombreBatalla
+	ret
+
+	
+.raza:
+	mov eax, nombreRaza
+	ret
+
+.santos:
+	mov eax, nombreSantos
+	ret
+
+.cartagena:
+	mov eax, nombreCartagena
+	ret
+
+.navidad:
+	mov eax, nombreNavidad
+	ret
